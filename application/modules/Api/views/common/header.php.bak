@@ -1,0 +1,98 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Interschool</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="apple-touch-icon.png">
+        <!-- Place favicon.ico in the root directory -->
+		
+		<!-- all css here -->
+        <link rel="stylesheet" href="<?php echo base_url();?>webassets/css/bootstrap.min.css">
+        <link rel="stylesheet" href="<?php echo base_url();?>webassets/css/font-awesome.min.css">
+        <link rel="stylesheet" href="<?php echo base_url();?>webassets/css/owl.carousel.min.css">
+        <link rel="stylesheet" href="<?php echo base_url();?>webassets/css/magnific-popup.css">
+        <link rel="stylesheet" href="<?php echo base_url();?>webassets/css/meanmenu.css">
+        <link rel="stylesheet" href="<?php echo base_url();?>webassets/style.css">
+        <link rel="stylesheet" href="<?php echo base_url();?>webassets/css/responsive.css">
+       </head>
+    <body>
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
+		<header>
+			<div class="header-top-area blue-bg">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-6 col-md-8">
+							<ul class="header-left text-center text-md-start">
+								<li class="header-middle">Open hours: 8.00-18.00 Mon-Sat</li>
+								<li>
+									<a href="https://facebook.com"><i class="fa fa-facebook"></i></a>
+									<a href="https://twitter.com"><i class="fa fa-twitter"></i></a>
+									<a href="https://pinterest.com"><i class="fa fa-pinterest-p"></i></a>
+									<a href="https://linkedin.com"><i class="fa fa-linkedin"></i></a>
+									<a href="https://vimeo.com"><i class="fa fa-youtube-square"></i></a>
+								</li>
+							</ul>
+						</div>
+						<div class="col-lg-6 col-md-4">
+							<ul class="header-right text-center text-md-end">
+								<li><a href="<?php echo base_url();?>user"><i class="fa fa-key"></i>Login</a></li>
+								<li><a href="<?php echo base_url();?>join-us"><i class="fa fa-lock"></i>Sign Up</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="main-menu-area">
+				<div class="container">
+					<div class="row align-items-center">
+						<div class="col-lg-3 col-md-2">
+							<div class="logo">
+								<a href="index.html"><img src="<?php echo base_url();?>webassets/img/logo/1.png" alt="" /></a>
+							</div>
+						</div>
+						<div class="col-lg-9 col-md-10">
+							<div class="menu-area text-end d-none d-md-block">
+								<nav>
+									<ul>
+										<li><a href="<?php echo base_url();?>">Home</a></li>
+										<li><a href="<?php echo base_url();?>">About</a></li>
+										<li><a href="<?php echo base_url();?>">Become an Affiliate</a></li>
+										<li><a href="<?php echo base_url();?>">Enrollment</a></li>
+										<li><a href="<?php echo base_url();?>">List a School</a></li>
+										<li><a href="<?php echo base_url();?>">Student</a></li>
+										<li><a href="<?php echo base_url();?>">Contact</a></li>
+									</ul>
+								</nav>
+							</div>
+							<div class="mobile-menu-area d-block d-md-none">
+								<div class="container">
+									<div class="mobile-menu">
+										<div id="mobile-menu">
+											<nav>
+									<ul>
+										<li><a href="<?php echo base_url();?>">Home</a></li>
+										<li><a href="<?php echo base_url();?>">About</a></li>
+										<li><a href="<?php echo base_url();?>">Become an Affiliate</a></li>
+										<li><a href="<?php echo base_url();?>">Enrollment</a></li>
+										<li><a href="<?php echo base_url();?>">List a School</a></li>
+										<li><a href="<?php echo base_url();?>">Student</a></li>
+										<li><a href="<?php echo base_url();?>">Contact</a></li>
+									</ul>
+								</nav>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</header>

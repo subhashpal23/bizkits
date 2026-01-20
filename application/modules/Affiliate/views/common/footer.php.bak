@@ -1,0 +1,14 @@
+<!-- all js here -->
+        <script src="<?php echo base_url();?>webassets/js/vendor/jquery.min.js"></script>
+        <script src="<?php echo base_url();?>webassets/js/bootstrap.min.js"></script>
+        <script src="<?php echo base_url();?>webassets/js/owl.carousel.min.js"></script>
+        <script src="<?php echo base_url();?>webassets/js/jquery.counterup.min.js"></script>
+		<script src="<?php echo base_url();?>webassets/js/waypoints.min.js"></script>
+		<script src="<?php echo base_url();?>webassets/js/wow.min.js"></script>
+		<script src="<?php echo base_url();?>webassets/js/jquery.mb.YTPlayer.min.js"></script>
+		<script src="<?php echo base_url();?>webassets/js/jquery.meanmenu.js"></script>
+        <script src="<?php echo base_url();?>webassets/js/jquery.magnific-popup.min.js"></script>
+        <script src="<?php echo base_url();?>webassets/js/plugins.js"></script>
+        <script src="<?php echo base_url();?>webassets/js/main.js"></script>
+    </body>
+</html>

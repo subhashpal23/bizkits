@@ -1,0 +1,111 @@
+<div class="dashboard-content-one">
+                <!-- Breadcubs Area Start Here -->
+                <div class="breadcrumbs-area">
+                    <h3>Admin Dashboard</h3>
+                    <ul>
+                        <li>
+                            <a href="<?php echo base_url();?>">Home</a>
+                        </li>
+                        <li>Admin</li>
+                    </ul>
+                </div>
+                <!-- Breadcubs Area End Here -->
+                <!-- Dashboard summery Start Here -->
+                
+   <div class="content">
+      <?php 
+      if(!empty($this->session->flashdata('flash_msg')))
+      {
+      ?>
+      <div class="alert alert-success alert-styled-right alert-arrow-right alert-bordered">
+         <button type="button" class="close" data-dismiss="alert"><span>×</span><span class="sr-only">Close</span></button>
+         <!--<span class="text-semibold">Well done!</span> Amount Added Successfully in User Wallet-->
+         <?php echo $this->session->flashdata('flash_msg');?>
+      </div>
+      <?php   
+      }
+      ?>
+      <div class="row">
+         <div class="card card-body">
+            <div class="card-heading">
+               <h5 class="card-title">Approved Deposit Request</h5>
+               <div class="heading-elements">
+                  <ul class="icons-list">
+                     <li><a data-action="collapse"></a></li>
+                     <li><a data-action="reload"></a></li>
+                     <li><a data-action="close"></a></li>
+                  </ul>
+               </div>
+            </div>
+            <table class="table datatable-responsive">
+               <thead>
+                  <tr>
+                     <th>Sr.No</th>
+                     <th>Request Id</th>
+                     <th>User Id</th>
+                     <th>User Name</th>
+                     <th>Amount Approved</th>
+                     <th>Request Date</th>
+                     <th>Response Date</th>
+                     <th>Proof of Payment</th>
+                     <th>Remark</th>
+                     <th>Status</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  <?php 
+                  $total_deposit_request_success_amount=0;
+                  if(!empty($wallet_deposit_request) && count($wallet_deposit_request)>0)
+                  {
+                     $sno=0;
+                     foreach($wallet_deposit_request as $request)
+                     {
+                     $sno++;
+                     $total_deposit_request_success_amount=$total_deposit_request_success_amount+$request->request_amount;
+                  ?>
+                  <tr>
+                     <td><?php echo $sno;?></td>
+                     <td><?php echo $request->deposit_id;?></td>
+                     <td><?php echo $request->user_id;?></td>
+                     <td><?php echo $request->username;?></td>
+                     <td><?php echo currency()." ".$request->request_amount;?></td>
+                     <td><?php echo date(date_formats(),strtotime($request->request_date));?></td>
+                     <td><?php echo date(date_formats(),strtotime($request->response_date));?></td>
+                     <td><a href="<?php echo ci_site_url().'images/'.$request->file_proof;?>" target="_blank">View Proof</a></td>
+                     <td><?php echo $request->title;?></td>
+                      <td><span class="label label-success">Success</span></td>
+                  </tr>
+                  <?php       
+                     }
+                  }
+                  ?>
+               </tbody>
+            </table>
+         </div>
+      </div>
+      <div class="row">
+         <div class="col-md-12">
+            <div class="card card-body">
+               <div class="card-heading">
+                  <h6 class="card-title">Total Success Deposit Amount</h6>
+               </div>
+               <div class="card-body">
+                  <?php echo currency()." ".$total_deposit_request_success_amount;?>
+               </div>
+            </div>
+         </div>
+      </div>
+      
+      <!-- Pickadate picker -->
+      <!-- /pickadate picker -->
+      <!-- Pickatime picker -->
+      <!-- /pickadate picker -->
+      <!-- Anytime picker -->
+      <!-- /anytime picker -->
+      <!-- Footer -->
+      <?php //$this->load->view('common/footer-text') ?>
+      <!-- /footer -->
+   </div>
+   <!-- /content area -->
+</div>
+<!-- /main content -->

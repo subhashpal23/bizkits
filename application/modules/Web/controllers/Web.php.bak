@@ -1,0 +1,27 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+/*
+@package Front/Front
+*/
+class Web extends Common_Controller 
+{
+	public function __construct()
+	{
+		//@call to parent CI_Controller constructor
+		parent::__construct();
+		$this->load->helper('layout');
+	}
+	
+	public function index()
+	{
+		_frontLayout('web-mgmt/home');
+	}
+	public function login()
+	{
+		if(!empty($this->input->post('login')))
+		{
+			print_r($_POST);
+		}
+		_frontLayout('web-mgmt/login');
+	}
+}//end class
