@@ -3810,199 +3810,147 @@ class Web extends Common_Controller
     }
 
     private function getToken()
-    {
-        $client_id = 'Aa91_WNVYuVT8JDjxCpCKLWv0eJSIbVimPTVqG3GnwzdPiQ-2PX8VqfvPwyADCZ1VB6J6eFsWmMmVZRB';
-        $secret = 'EOIVy-rAOPWZiNQcY47Xde53OM24j1CZFv4D_bg8E4iHOVVOfHoamgEpMcMOV6z6Wg0HihggOUoCHO41';
-        $ch = curl_init('https://api-m.sandbox.paypal.com/v1/oauth2/token');
+{
+    $this->config->load('paypal');
 
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_USERPWD => $client_id . ':' . $secret,
-            CURLOPT_POSTFIELDS => 'grant_type=client_credentials',
-            CURLOPT_HTTPHEADER => ['Accept: application/json', 'Accept-Language: en_US'],
-        ]);
+    $client_id = $this->config->item('paypal_client_id');
+    $secret    = $this->config->item('paypal_secret');
+    $base_url  = $this->config->item('paypal_base_url');
 
-        $response = curl_exec($ch);
+    $ch = curl_init($base_url . 'v1/oauth2/token');
 
-        if (curl_errno($ch)) {
-            echo curl_error($ch);
-            exit();
-        }
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_USERPWD => $client_id . ':' . $secret,
+        CURLOPT_POSTFIELDS => 'grant_type=client_credentials',
+        CURLOPT_HTTPHEADER => [
+            'Accept: application/json',
+            'Accept-Language: en_US'
+        ],
+    ]);
 
-        curl_close($ch);
+    $response = curl_exec($ch);
 
-        $result = json_decode($response, true);
-
-        if (!isset($result['access_token'])) {
-            echo '<pre>';
-            print_r($result);
-            exit();
-        }
-
-        return $result['access_token'];
-    }
-    public function create_order()
-    {
-        $token = $this->getToken();
-        // JSON input read
-        $input = json_decode(file_get_contents('php://input'), true);
-
-        $amount = $input['amount']; // JS se aaya amount
-
-        // safety (recommended)
-        $amount = number_format((float) $amount, 2, '.', '');
-
-        // optional: session me bhi store
-        $this->session->set_userdata('paypal_amount', $amount);
-
-        $data = [
-            'intent' => 'CAPTURE',
-            'purchase_units' => [
-                [
-                    'amount' => [
-                        'currency_code' => 'USD',
-                        'value' => $amount,
-                    ],
-                ],
-            ],
-        ];
-
-        $ch = curl_init('https://api-m.sandbox.paypal.com/v2/checkout/orders');
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json', "Authorization: Bearer $token"],
-        ]);
-
-        echo curl_exec($ch);
-        curl_close($ch);
-    }
-    public function capture_order($orderID)
-    {
-        $token = $this->getToken();
-
-        $ch = curl_init("https://api-m.sandbox.paypal.com/v2/checkout/orders/$orderID/capture");
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json', "Authorization: Bearer $token"],
-        ]);
-
-        echo curl_exec($ch);
-        curl_close($ch);
+    if (curl_errno($ch)) {
+        log_message('error', curl_error($ch));
+        return false;
     }
 
-    public function capture_order_check($orderID)
-    {
-        $token = $this->getToken();
+    curl_close($ch);
 
-        $ch = curl_init("https://api-m.sandbox.paypal.com/v2/checkout/orders/$orderID");
+    $result = json_decode($response, true);
 
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPGET => true, // यह GET request है
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                'Accept: application/json',
-                "Authorization: Bearer $token",
-                'PayPal-Request-Id: ' . uniqid(), // Optional but good practice
-            ],
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_TIMEOUT => 30,
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-
-        curl_close($ch);
-
-        // Log the response for debugging
-        log_message('info', "PayPal Check Response - HTTP Code: $httpCode");
-        log_message('info', 'PayPal Check Response: ' . $response);
-
-        if ($curlError) {
-            echo 'CURL Error: ' . $curlError;
-            return false;
-        }
-
-        if ($httpCode == 200) {
-            $data = json_decode($response, true);
-
-            // echo "<h2>PayPal Order Details</h2>";
-            // echo "<pre>";
-            // echo "Order ID: " . ($data['id'] ?? 'N/A') . "\n";
-            // echo "Status: " . ($data['status'] ?? 'N/A') . "\n";
-            // echo "Intent: " . ($data['intent'] ?? 'N/A') . "\n";
-
-            // if (isset($data['purchase_units'][0])) {
-            // 	$purchaseUnit = $data['purchase_units'][0];
-            // 	echo "\n=== Purchase Unit Details ===\n";
-            // 	echo "Reference ID: " . ($purchaseUnit['reference_id'] ?? 'N/A') . "\n";
-            // 	echo "Amount: " . ($purchaseUnit['amount']['currency_code'] ?? '') . " " . ($purchaseUnit['amount']['value'] ?? 'N/A') . "\n";
-
-            // 	if (isset($purchaseUnit['payments']['captures'][0])) {
-            // 		$capture = $purchaseUnit['payments']['captures'][0];
-            // 		echo "\n=== Capture Details ===\n";
-            // 		echo "Capture ID: " . ($capture['id'] ?? 'N/A') . "\n";
-            // 		echo "Capture Status: " . ($capture['status'] ?? 'N/A') . "\n";
-            // 		echo "Capture Amount: " . ($capture['amount']['currency_code'] ?? '') . " " . ($capture['amount']['value'] ?? 'N/A') . "\n";
-            // 		echo "Final Capture: " . ($capture['final_capture'] ? 'Yes' : 'No') . "\n";
-            // 		echo "Create Time: " . ($capture['create_time'] ?? 'N/A') . "\n";
-            // 		echo "Update Time: " . ($capture['update_time'] ?? 'N/A') . "\n";
-
-            // 		if (isset($capture['seller_receivable_breakdown'])) {
-            // 			$breakdown = $capture['seller_receivable_breakdown'];
-            // 			echo "\n=== Seller Receivable Breakdown ===\n";
-            // 			echo "Gross Amount: " . ($breakdown['gross_amount']['value'] ?? 'N/A') . " " . ($breakdown['gross_amount']['currency_code'] ?? '') . "\n";
-            // 			echo "PayPal Fee: " . ($breakdown['paypal_fee']['value'] ?? 'N/A') . " " . ($breakdown['paypal_fee']['currency_code'] ?? '') . "\n";
-            // 			echo "Net Amount: " . ($breakdown['net_amount']['value'] ?? 'N/A') . " " . ($breakdown['net_amount']['currency_code'] ?? '') . "\n";
-            // 		}
-            // 	}
-
-            // 	if (isset($purchaseUnit['shipping'])) {
-            // 		echo "\n=== Shipping Details ===\n";
-            // 		$shipping = $purchaseUnit['shipping'];
-            // 		echo "Name: " . ($shipping['name']['full_name'] ?? 'N/A') . "\n";
-            // 		echo "Address: " . ($shipping['address']['address_line_1'] ?? 'N/A') . "\n";
-            // 		echo "City: " . ($shipping['address']['admin_area_2'] ?? 'N/A') . "\n";
-            // 		echo "State: " . ($shipping['address']['admin_area_1'] ?? 'N/A') . "\n";
-            // 		echo "Zip: " . ($shipping['address']['postal_code'] ?? 'N/A') . "\n";
-            // 		echo "Country: " . ($shipping['address']['country_code'] ?? 'N/A') . "\n";
-            // 	}
-            // }
-
-            // echo "\n=== Payer Details ===\n";
-            // if (isset($data['payer'])) {
-            // 	$payer = $data['payer'];
-            // 	echo "Payer ID: " . ($payer['payer_id'] ?? 'N/A') . "\n";
-            // 	echo "Email: " . ($payer['email_address'] ?? 'N/A') . "\n";
-            // 	echo "Name: " . ($payer['name']['given_name'] ?? '') . " " . ($payer['name']['surname'] ?? '') . "\n";
-
-            // 	if (isset($payer['address'])) {
-            // 		echo "Payer Address: " . ($payer['address']['country_code'] ?? 'N/A') . "\n";
-            // 	}
-            // }
-
-            // echo "\n=== Links ===\n";
-            // if (isset($data['links'])) {
-            // 	foreach ($data['links'] as $link) {
-            // 		echo $link['rel'] . ": " . $link['href'] . "\n";
-            // 	}
-            // }
-
-            // echo "</pre>";
-
-            // Return the data as array
-            return $data;
-        } else {
-            echo "<h3>Error: HTTP Code $httpCode</h3>";
-            echo '<pre>';
-            print_r(json_decode($response, true));
-            echo '</pre>';
-            return false;
-        }
+    if (!isset($result['access_token'])) {
+        log_message('error', json_encode($result));
+        return false;
     }
+
+    return $result['access_token'];
+}
+
+
+public function create_order()
+{
+    $token = $this->getToken();
+    if (!$token) {
+        show_error('PayPal Token Error');
+    }
+
+    $this->config->load('paypal');
+    $base_url = $this->config->item('paypal_base_url');
+
+    $input  = json_decode(file_get_contents('php://input'), true);
+    $amount = number_format((float)$input['amount'], 2, '.', '');
+
+    $this->session->set_userdata('paypal_amount', $amount);
+
+    $data = [
+        'intent' => 'CAPTURE',
+        'purchase_units' => [
+            [
+                'amount' => [
+                    'currency_code' => 'USD',
+                    'value' => $amount
+                ]
+            ]
+        ]
+    ];
+
+    $ch = curl_init($base_url . 'v2/checkout/orders');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            "Authorization: Bearer $token"
+        ],
+    ]);
+
+    echo curl_exec($ch);
+    curl_close($ch);
+}
+
+public function capture_order($orderID)
+{
+    $token = $this->getToken();
+    if (!$token) {
+        show_error('PayPal Token Error');
+    }
+
+    $this->config->load('paypal');
+    $base_url = $this->config->item('paypal_base_url');
+
+    $ch = curl_init($base_url . "v2/checkout/orders/$orderID/capture");
+
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            "Authorization: Bearer $token"
+        ],
+    ]);
+
+    echo curl_exec($ch);
+    curl_close($ch);
+}
+
+public function capture_order_check($orderID)
+{
+    $token = $this->getToken();
+    if (!$token) {
+        return false;
+    }
+
+    $this->config->load('paypal');
+    $base_url = $this->config->item('paypal_base_url');
+
+    $ch = curl_init($base_url . "v2/checkout/orders/$orderID");
+
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPGET => true,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Accept: application/json',
+            "Authorization: Bearer $token",
+        ],
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_TIMEOUT => 30,
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode == 200) {
+        return json_decode($response, true);
+    }
+
+    log_message('error', 'PayPal Check Error: ' . $response);
+    return false;
+}
+
 } //end class
