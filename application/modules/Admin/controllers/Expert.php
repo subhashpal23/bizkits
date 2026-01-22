@@ -315,6 +315,15 @@ class Expert extends Common_Controller
 		//$data['type']=$type;
 		$data['conditions']=$conditions;
 		$data['all_members']=$all_members=$this->expert_model->getAllMembers($conditions);
+		$data['country'] = $this->db
+			->select('*')
+			->from('countries')
+			->get()
+			->result();
+
+		// pr($data['country']);
+		// exit;
+
 		//echo "<pre>";print_r($all_members);
 		_adminLayout("expert-mgmt/all-member",$data);
 	}
@@ -513,6 +522,12 @@ class Expert extends Common_Controller
 		$user_id=ID_decode($user_id);
 		$data['user_details']=$this->account_model->getUserDetails($user_id);
 		$data['user_id']=$user_id;
+		$data['country_list'] = $this->db
+			->select('*')
+			->from('countries')
+			->get()
+			->result();
+		// pr($data['country']);exit;
 		_adminLayout("expert-mgmt/edit-member",$data);
 	}
 	public function updateStockistInformation($user_id)
@@ -768,6 +783,7 @@ class Expert extends Common_Controller
 	}
 	public function register($select_id=null)
 	{
+		
 	    $this->load->helper("registration_helper");
 		if(!empty($select_id))
 		{
@@ -827,6 +843,9 @@ class Expert extends Common_Controller
 	     	$country=$this->input->post('country');
 	     	$state=$this->input->post('state');
 	     	$city=$this->input->post('city');
+			$country_name = $this->input->post('bill_country');
+			$state_name = $this->input->post('bill_state');
+			$city_name = $this->input->post('bill_city');
 	     	$address_line1=$this->input->post('address');
 	     	$date_of_birth=$this->input->post('date_of_birth');
 	     	/////Bank account informtaion
@@ -900,7 +919,10 @@ class Expert extends Common_Controller
     					   'auth_affiliate'    => TRUE,
     					   'SD_User_Name'     =>$username,
     					   'user_id'          =>$user_id,
-    					   'userpanel_user_id'=>$user_id
+    					   'userpanel_user_id'=>$user_id,
+						   'country'		     => $country_name,
+						   'state'		     => $state_name,
+						   'city'		     => $city_name,
     			           );
     			           //print_r($userdata); exit;
     		  $this->db->update('user_registration',array('current_login_status'=>'1'),array('user_id'=>$user_id));            

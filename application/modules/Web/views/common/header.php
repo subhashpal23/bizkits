@@ -122,9 +122,18 @@
 					<div class="col-lg-6 col-md-6 col-12">
 						<div class="account-area text-end">
 							<ul>
-								<li><a href="<?php echo base_url();?>login">My Account</a></li>
+								<?php if ($this->session->userdata('user_id')) : ?>
+								<li><a href="<?php echo base_url();?>dashboard">My Account</a></li>
+								<?php else : ?>
+									<li><a href="<?= base_url('login') ?>">My Account</a></li>
+								<?php endif; ?>
 								<li><a href="<?php echo base_url();?>checkout">Checkout</a></li>
-								<li><a href="<?php echo base_url();?>login">Sign in</a></li>
+								<!-- <li><a href="<?php echo base_url();?>login">Sign in</a></li> -->
+								<?php if ($this->session->userdata('user_id')) : ?>
+									<!-- <a href="<?= base_url('dashboard') ?>">Dashboard</a> -->
+								<?php else : ?>
+									<li><a href="<?= base_url('login') ?>">Sign in</a></li>
+								<?php endif; ?>
 							</ul>
 						</div>
 					</div>
@@ -421,8 +430,13 @@
 							</nav>
 						</div>
 						<div class="safe-area">
-							<a href="<?php echo base_url();?>login">Login</a>
+							<?php if ($this->session->userdata('user_id')) : ?>
+								<a href="<?= base_url('dashboard') ?>">Dashboard</a>
+							<?php else : ?>
+								<a href="<?= base_url('login') ?>">Login</a>
+							<?php endif; ?>
 						</div>
+
 					</div>
 				</div>
 			</div>
@@ -440,8 +454,11 @@
 									<li><a href="<?php echo base_url();?>products">Products</a></li>
 									<li><a href="<?php echo base_url();?>about-us">About Us</a></li>
 									<li><a href="<?php echo base_url();?>contact-us">Contact Us</a></li>
-									<li><a href="<?php echo base_url();?>login">Login</a></li>
-									
+									<?php if ($this->session->userdata('user_id')) : ?>
+										<li><a href="<?= base_url('dashboard') ?>">Dashboard</a></li>
+									<?php else : ?>
+										<li><a href="<?= base_url('login') ?>">Login</a></li>
+									<?php endif; ?>									
 								</ul>
 							</nav>
 						</div>

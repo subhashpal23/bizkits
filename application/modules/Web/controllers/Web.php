@@ -1605,9 +1605,9 @@ class Web extends Common_Controller
         $country_name = $this->input->post('country_id');
 
         $country = $this->db->select('*')->from('countries')->where('name', $country_name)->get()->row();
-
+		
         $states = $this->db->select('*')->from('states')->where('country_id', $country->id)->get()->result();
-        // print_r($states); exit;
+        print_r($country); exit;
         echo '<option value="">Select State</option>';
         foreach ($states as $row) {
             echo '<option value="' . $row->name . '">' . $row->name . '</option>';
@@ -3270,9 +3270,9 @@ class Web extends Common_Controller
     private function getClient()
     {
         $client = new Google_Client();
-
-        $client->setClientId(getenv('GOOGLE_CLIENT_ID'));
-		$client->setClientSecret(getenv('GOOGLE_CLIENT_SECRET'));
+		$this->config->load('google');
+		$client->setClientId($this->config->item('google_client_id'));
+    	$client->setClientSecret($this->config->item('google_client_secret'));
 
         // ⚠️ EXACT redirect URI (Google console me bhi same hona chahiye)
         $client->setRedirectUri('http://localhost/bizkits/webgooglemeet/callback');
