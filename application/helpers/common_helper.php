@@ -1099,9 +1099,10 @@ if (!function_exists('upload_zip_file')) {
         $CI =& get_instance(); // CodeIgniter instance
 
         $config['upload_path']   = $upload_path;
-        $config['allowed_types'] = 'zip';
+        $config['allowed_types'] = '*';
         $config['max_size']      = $max_size; // KB
         $config['overwrite']     = FALSE;
+        $config['encrypt_name']  = TRUE;  // ✅ avoid duplicate file names
 
         $CI->load->library('upload', $config);
 
