@@ -146,26 +146,17 @@
                             <span id="matchpassword"></span>
                         </div>
                         <div class="form-group">
-                            <select id="bill_country" name="bill_country" class="form-control">
+                            <select onchange="print_state('state',this.selectedIndex);" id="country" name ="country" class="form-control">
 								<option value="">--select country--</option>
-                                <?php if (!empty($country)) : ?>
-                                <?php foreach ($country as $row) : ?>
-                                <option value="<?= $row->name ?>">
-                                    <?= $row->name ?>
-                                </option>
-                                <?php endforeach; ?>
-                                <?php endif; ?>
+                               
                             </select>
                         </div>
                         <div class="form-group">
-                            <select id="bill_state" name="bill_state" class="form-control">
-                                <option value="">--select state--</option>
-                            </select>
+                            <select name ="state" id ="state" class="form-control required"><option value="">--Select State--</option></select>
                         </div>
                         <div class="form-group">
-                            <select id="bill_city" name="bill_city" class="form-control">
-                                <option value="">--select city--</option>
-                            </select>
+                             <input required="" type="text" id="city" class="form-control required"
+                                name="city"  placeholder="City">
                         </div>
                         <div class="form-group mb-30">
                             <button type="submit" class="btn btn-primary btn-block hover-up" name="login"
@@ -242,32 +233,7 @@
         }
     }
     </script>
-    <script>
-    $('#bill_country').change(function() {
-        var country_id = $(this).val();
-        $.ajax({
-            url: "<?= base_url('location/get_states') ?>",
-            type: "POST",
-            data: {
-                country_id: country_id
-            },
-            success: function(data) {
-                $('#bill_state').html(data);
-                $('#bill_city').html('<option value="">Select City</option>');
-            }
-        });
-    });
-    $('#bill_state').change(function() {
-        var state_id = $(this).val();
-        $.ajax({
-            url: "<?= base_url('location/get_cities') ?>",
-            type: "POST",
-            data: {
-                state_id: state_id
-            },
-            success: function(data) {
-                $('#bill_city').html(data);
-            }
-        });
-    });
-    </script>
+    <script src="<?php echo base_url();?>assets/js/countries.js"></script>
+
+    <script language="javascript">print_country("country");</script>
+

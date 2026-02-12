@@ -167,30 +167,24 @@
 		                                <h3>Billing Details</h3>
 
 		                                <!-- Hidden full name field to send with the form -->
+		                                <?php
+		                                $user_id=$this->session->userdata('user_id');
+$ud=get_user_details($user_id);
+//pr($ud->first_name);
+		                                ?>
 		                                <input type="hidden" name="billing_name" id="billing_name">
 
 		                                <div class="row">
-		                                    <div class="col-lg-12">
-		                                        <div class="country-select">
-		                                            <label>Country <span class="required">*</span></label>
-		                                            <select id="bill_country" name="bill_country" data-required="true">
-		                                                <option value="">-- select --</option>
-		                                                <!-- <option value="Lebanon" selected>Lebanon</option> -->
-		                                                <?php foreach($countries as $row){ ?>
-		                                                <option value="<?= $row->name ?>"><?= $row->name ?></option>
-		                                                <?php } ?>
-		                                            </select>
-		                                        </div>
-		                                    </div>
+		                                    
 
 		                                    <div class="col-lg-6 col-md-6 col-12">
 		                                        <div class="checkout-form-list">
-		                                            <label>First Name <span class="required">*</span></label>
+		                                            <label>Name <span class="required">*</span></label>
 		                                            <input type="text" id="bill_first" name="bill_first" data-required="true"
-		                                                placeholder="">
+		                                                placeholder="" value="<?php echo $ud->first_name;?>">
 		                                        </div>
 		                                    </div>
-		                                    <div class="col-lg-6 col-md-6 col-12">
+		                                    <div class="col-lg-6 col-md-6 col-12" style="display: none">
 		                                        <div class="checkout-form-list">
 		                                            <label>Last Name <span class="required">*</span></label>
 		                                            <input type="text" id="bill_last" name="bill_last" data-required="true"
@@ -198,10 +192,10 @@
 		                                        </div>
 		                                    </div>
 
-		                                    <div class="col-lg-12 col-md-12 col-12">
+		                                    <div class="col-lg-6 col-md-12 col-12">
 		                                        <div class="checkout-form-list">
 		                                            <label>Company Name</label>
-		                                            <input type="text" id="bill_company" name="bill_company" placeholder="">
+		                                            <input type="text" id="bill_company" name="bill_company" placeholder="" value="<?php echo $ud->first_name;?>">
 		                                        </div>
 		                                    </div>
 
@@ -209,22 +203,30 @@
 		                                        <div class="checkout-form-list">
 		                                            <label>Address <span class="required">*</span></label>
 		                                            <input type="text" id="bill_address1" name="bill_address1"
-		                                                data-required="true" placeholder="Street address">
+		                                                data-required="true" placeholder="Street address" value="<?php echo $ud->address_line1;?>">
 		                                        </div>
 		                                    </div>
 
 		                                    <div class="col-lg-12 col-md-12 col-12">
 		                                        <div class="checkout-form-list">
 		                                            <input type="text" id="bill_address2" name="bill_address2"
-		                                                placeholder="Apartment, suite, unit etc. (optional)">
+		                                                placeholder="Apartment, suite, unit etc. (optional)" value="<?php echo $ud->address_line2;?>">
 		                                        </div>
 		                                    </div>
 
-
-		                                    <div class="col-lg-12 col-md-12 col-12">
-		                                        <div class="checkout-form-list">
+		                                    <div class="col-lg-6">
+		                                        <div class="country-select">
+		                                            <label>Country <span class="required">*</span></label>
+		                                            <select id="bill_country" name="bill_country" data-required="true" onchange="print_state('bill_state',this.selectedIndex);">
+		                                                <option value="">-- select --</option>
+		                                                
+		                                            </select>
+		                                        </div>
+		                                    </div>
+		                                    <div class="col-lg-6 col-md-12 col-12">
+		                                        <div class="country-select">
 		                                            <label>State <span class="required">*</span></label>
-		                                            <select id="bill_state" name="bill_state" class="form-control">
+		                                            <select id="bill_state" name="bill_state" >
 		                                                <option value="">--select--</option>
 		                                            </select>
 		                                        </div>
@@ -232,18 +234,17 @@
 		                                    <div class="col-lg-6 col-md-6 col-12">
 		                                        <div class="checkout-form-list">
 		                                            <label> City <span class="required">*</span></label>
-		                                            <select id="bill_city" name="bill_city" class="form-control">
-		                                                <option value="">--select--</option>
-		                                            </select>
+		                                            <input type="text" id="bill_city" name="bill_city" data-required="true"
+		                                                placeholder="City" value="<?php echo $ud->city;?>">
 		                                        </div>
 		                                    </div>
 
 
 		                                    <div class="col-lg-6 col-md-6 col-12">
 		                                        <div class="checkout-form-list">
-		                                            <label>Postcode / Zip <span class="required">*</span></label>
-		                                            <input type="text" id="bill_zip" name="bill_zip" data-required="true"
-		                                                placeholder="Postcode / Zip">
+		                                            <label>Postcode / Zip</label>
+		                                            <input type="text" id="bill_zip" name="bill_zip" 
+		                                                placeholder="Postcode / Zip" value="<?php echo $ud->zipcode;?>">
 		                                        </div>
 		                                    </div>
 
@@ -251,7 +252,7 @@
 		                                        <div class="checkout-form-list">
 		                                            <label>Email Address <span class="required">*</span></label>
 		                                            <input type="email" id="bill_email" name="bill_email" data-required="true"
-		                                                placeholder="">
+		                                                placeholder="" value="<?php echo $ud->email;?>">
 		                                        </div>
 		                                    </div>
 
@@ -259,11 +260,11 @@
 		                                        <div class="checkout-form-list">
 		                                            <label>Phone <span class="required">*</span></label>
 		                                            <input type="text" id="bill_phone" name="bill_phone" data-required="true"
-		                                                placeholder="Phone">
+		                                                placeholder="Phone" value="<?php echo $ud->contact_no;?>">
 		                                        </div>
 		                                    </div>
 
-		                                    <div class="col-lg-12 col-md-12 col-12">
+		                                    <div class="col-lg-12 col-md-12 col-12" style="display:none;">
 		                                        <div class="checkout-form-list create-acc">
 		                                            <input type="checkbox" id="cbox">
 		                                            <label for="cbox">Create an account?</label>
@@ -279,7 +280,7 @@
 		                                    </div>
 		                                </div>
 
-		                                <div class="different-address">
+		                                <div class="different-address" style="display: none">
 		                                    <div class="ship-different-title">
 		                                        <h3>
 		                                            <label for="ship-box">Ship to a different address?</label>
@@ -502,7 +503,7 @@
 		                                            <div class="panel-group" id="accordion" role="tablist"
 		                                                aria-multiselectable="true">
 		                                                <div class="panel panel-default">
-		                                                    <div class="panel-heading" role="tab" id="headingOne">
+		                                                    <!-- <div class="panel-heading" role="tab" id="headingOne">
 		                                                        <h4 class="panel-title">
 		                                                            <a data-bs-toggle="collapse" data-bs-parent="#accordion"
 		                                                                href="#collapseOne" aria-expanded="true"
@@ -510,7 +511,7 @@
 		                                                                Direct Bank Transfer
 		                                                            </a>
 		                                                        </h4>
-		                                                    </div>
+		                                                    </div> -->
 		                                                    <div id="collapseOne" class="panel-collapse collapse in"
 		                                                        role="tabpanel" aria-labelledby="headingOne">
 		                                                        <div class="panel-body">
@@ -522,7 +523,7 @@
 		                                                    </div>
 		                                                </div>
 		                                                <div class="panel panel-default">
-		                                                    <div class="panel-heading" role="tab" id="headingTwo">
+		                                                    <!-- <div class="panel-heading" role="tab" id="headingTwo">
 		                                                        <h4 class="panel-title">
 		                                                            <a class="collapsed" role="button"
 		                                                                data-bs-toggle="collapse" data-bs-parent="#accordion"
@@ -531,7 +532,7 @@
 		                                                                Cheque Payment
 		                                                            </a>
 		                                                        </h4>
-		                                                    </div>
+		                                                    </div> -->
 		                                                    <div id="collapseTwo" class="panel-collapse collapse"
 		                                                        role="tabpanel" aria-labelledby="headingTwo">
 		                                                        <div class="panel-body">
@@ -541,21 +542,60 @@
 		                                                    </div>
 		                                                </div>
 		                                                <div class="panel panel-default">
-		                                                    <div class="panel-heading" role="tab" id="headingThree">
-		                                                        <h4 class="panel-title">
-		                                                            <a class="collapsed" role="button"
-		                                                                data-bs-toggle="collapse" data-bs-parent="#accordion"
-		                                                                href="#collapseThree" aria-expanded="false"
-		                                                                aria-controls="collapseThree">
-		                                                                PayPal <img src="img/2.png" alt="payment" />
-		                                                            </a>
-		                                                        </h4>
-		                                                    </div>
-		                                                    <div id="collapseThree" class="panel-collapse collapse"
+		                                                    
+		                                                    <div id="collapseThree" class="panel-collapse collapse show"
 		                                                        role="tabpanel" aria-labelledby="headingThree">
 		                                                        <div class="panel-body">
-		                                                            <p>Pay via PayPal; you can pay with your credit card if
-		                                                                you don’t have a PayPal account.</p>
+		                                                            <!-- <p>Pay via PayPal; you can pay with your credit card if
+		                                                                you don’t have a PayPal account.</p> -->
+
+		                                                                <div class="container mt-4">
+    <h5 class="mb-3">Select Payment Method</h5>
+
+    <div class="row g-3">
+
+        <!-- PayPal -->
+        <div class="col-md-4">
+            <label class="payment-card">
+                <input type="radio" name="payment_method" value="paypal">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fab fa-paypal fa-2x text-primary mb-2"></i>
+                        <h6 class="mb-0">PayPal</h6>
+                    </div>
+                </div>
+            </label>
+        </div>
+
+        <!-- Stripe -->
+        <div class="col-md-4">
+            <label class="payment-card">
+                <input type="radio" name="payment_method" value="stripe">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fab fa-stripe fa-2x text-indigo mb-2"></i>
+                        <h6 class="mb-0">Stripe</h6>
+                    </div>
+                </div>
+            </label>
+        </div>
+
+        <!-- Credit Card -->
+        <div class="col-md-4">
+            <label class="payment-card">
+                <input type="radio" name="payment_method" value="card">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-credit-card fa-2x text-success mb-2"></i>
+                        <h6 class="mb-0">Credit / Debit Card</h6>
+                    </div>
+                </div>
+            </label>
+        </div>
+
+    </div>
+</div>
+
 		                                                        </div>
 		                                                    </div>
 		                                                </div>
@@ -1055,7 +1095,7 @@ function validateForm() {
     // Simple validation example
     const requiredFields = [
         {id: '#bill_first', name: 'First Name'},
-        {id: '#bill_last', name: 'Last Name'},
+        
         {id: '#bill_email', name: 'Email'},
         {id: '#bill_phone', name: 'Phone'},
         {id: '#bill_address1', name: 'Address'},
@@ -1089,32 +1129,36 @@ function validateForm() {
     return isValid;
 }
 </script>
-		    <script>
-		    $('#bill_country').change(function() {
-		        var country_id = $(this).val();
-		        $.ajax({
-		            url: "<?= base_url('location/get_states') ?>",
-		            type: "POST",
-		            data: {
-		                country_id: country_id
-		            },
-		            success: function(data) {
-		                $('#bill_state').html(data);
-		                $('#bill_city').html('<option value="">Select City</option>');
-		            }
-		        });
-		    });
-		    $('#bill_state').change(function() {
-		        var state_id = $(this).val();
-		        $.ajax({
-		            url: "<?= base_url('location/get_cities') ?>",
-		            type: "POST",
-		            data: {
-		                state_id: state_id
-		            },
-		            success: function(data) {
-		                $('#bill_city').html(data);
-		            }
-		        });
-		    });
-		    </script>
+		    
+<script src="<?php echo base_url();?>assets/js/countries.js"></script>
+<script language="javascript">print_country("bill_country");</script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+<style>
+.payment-card {
+    cursor: pointer;
+    display: block;
+}
+
+.payment-card input[type="radio"] {
+    display: none;
+}
+
+.payment-card .card {
+    border: 2px solid #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.payment-card input[type="radio"]:checked + .card {
+    border-color: #0d6efd;
+    background-color: #f0f7ff;
+}
+
+.payment-card .card:hover {
+    border-color: #0d6efd;
+}
+.text-indigo {
+    color: #635bff;
+}
+</style>

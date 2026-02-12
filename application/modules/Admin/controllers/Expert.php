@@ -641,7 +641,7 @@ class Expert extends Common_Controller
         $email=$this->input->post('email');
         $country=$this->input->post('country');
         $contact_no=$this->input->post('contact_no');
-	    $image_upload_path='/images/';
+	    $image_upload_path='/uploads/images/';
 	    $profile_pic=adImageUpload($_FILES['profile_pic'],1, $image_upload_path);
 	    $profile_pic=(!empty($profile_pic))?$profile_pic:$this->input->post('profile_pic_old');
 	    ///////////

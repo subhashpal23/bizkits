@@ -77,7 +77,7 @@
                      </div>
                   </div>
                   <div class="form-group">
-                     <label class="col-lg-3 control-label">Product Main Image<span class="required-field">*</span>:</label>
+                     <label class="col-lg-3 control-label">Image<span class="required-field">*</span>:</label>
                      <div class="col-lg-9">
                         <img width='150' src="<?php echo base_url(); ?>product_images/<?php echo $product_data['product_image']; ?>" /><br><br>
                         <input name='product_image' type="file" class="file-input">
@@ -157,6 +157,12 @@
                             </div>
                         </div>
                         <div class="form-group">
+                             <label class="col-lg-3 control-label">No Of Sessions<span class="required-field">*</span>:</label>
+                             <div class="col-lg-9">
+                                <input type="text"  name="calls1" value="<?php echo $product_data['calls1']; ?>" class="form-control" placeholder="No Of Sessions">
+                             </div>
+                          </div>
+                        <div class="form-group">
                             <label class="col-lg-3 control-label">Description<span class="required-field">*</span>:</label>
                             <div class="col-lg-9">
                                 <textarea id="description" name="description" class="col-lg-3 control-label"><?php echo $product_data['description']; ?></textarea>
@@ -164,13 +170,13 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="col-lg-3 control-label">(Basic) Zip file<span class="required-field">*</span>:</label>
+                            <label class="col-lg-3 control-label">Upload file<span class="required-field">*</span>:</label>
                             <div class="col-lg-9">
                                 <?php $zip1_url = site_url().'uploads/'.$product_data['zip1']; 
                                 if($product_data['zip1']){
                                 ?>
                                 
-                                <a href="<?= $zip1_url ?>" download>Download Zip </a><br>
+                                <a href="<?= $zip1_url ?>" download>Download </a><br>
                                 <?php } ?>
                                 <input type="hidden"  name="zip1"  value="<?php echo $product_data['zip1']; ?>" class="form-control" placeholder=""> 
                                 <input name='userfile1' type="file" class="file-input">
@@ -204,7 +210,13 @@
                           <div class="form-group">
                              <label class="col-lg-3 control-label">(Pro) Price<span class="required-field">*</span>:</label>
                              <div class="col-lg-9">
-                                <input type="text"  name="price3"  value="<?php echo $product_data['price3']; ?>"  class="form-control" placeholder="Price">
+                                <input type="text"  name="price2"  value="<?php echo $product_data['price2']; ?>"  class="form-control" placeholder="Price">
+                             </div>
+                          </div>
+                          <div class="form-group">
+                             <label class="col-lg-3 control-label">No Of Sessions<span class="required-field">*</span>:</label>
+                             <div class="col-lg-9">
+                                <input type="text"  name="calls2" value="<?php echo $product_data['calls2']; ?>" class="form-control" placeholder="No Of Sessions">
                              </div>
                           </div>
                           <div class="form-group">
@@ -215,16 +227,16 @@
                           </div>       
                           
                           <div class="form-group">
-                             <label class="col-lg-3 control-label">(Pro) Zip file<span class="required-field">*</span>:</label>
+                             <label class="col-lg-3 control-label">Upload file<span class="required-field">*</span>:</label>
                              <div class="col-lg-9">
-                                 <?php $zip3_url = site_url().'uploads/'.$product_data['zip3']; 
-                                 if($product_data['zip3']){
+                                 <?php $zip3_url = site_url().'uploads/'.$product_data['zip2']; 
+                                 if($product_data['zip2']){
                                  ?>
                                  
-                                 <a href="<?= $zip3_url ?>" download>Download Zip </a><br>
+                                 <a href="<?= $zip2_url ?>" download>Download </a><br>
                                  <?php } ?>
-                                 <input type="hidden"  name="zip3"  value="<?php echo $product_data['zip3']; ?>" class="form-control" placeholder=""> 
-                                <input name='userfile3' type="file" class="file-input">
+                                 <input type="hidden"  name="zip2"  value="<?php echo $product_data['zip2']; ?>" class="form-control" placeholder=""> 
+                                <input name='userfile2' type="file" class="file-input">
                              </div>
                           </div> 
                             <!-- Economy Image -->
@@ -253,7 +265,13 @@
                           <div class="form-group">
                              <label class="col-lg-3 control-label">(Enterprices) Price<span class="required-field">*</span>:</label>
                              <div class="col-lg-9">
-                                <input type="text"  name="price2"  value="<?php echo $product_data['price2']; ?>"  class="form-control" placeholder="Price">
+                                <input type="text"  name="price3"  value="<?php echo $product_data['price3']; ?>"  class="form-control" placeholder="Price">
+                             </div>
+                          </div>
+                          <div class="form-group">
+                             <label class="col-lg-3 control-label">No Of Sessions<span class="required-field">*</span>:</label>
+                             <div class="col-lg-9">
+                                <input type="text"  name="calls3" value="<?php echo $product_data['calls3']; ?>" class="form-control" placeholder="No Of Sessions">
                              </div>
                           </div>
                           <div class="form-group">
@@ -263,16 +281,16 @@
                              </div>
                           </div>
                           <div class="form-group">
-                             <label class="col-lg-3 control-label">(Enterprices) Zip file<span class="required-field">*</span>:</label>
+                             <label class="col-lg-3 control-label">Upload file<span class="required-field">*</span>:</label>
                              <div class="col-lg-9">
-                                 <?php $zip2_url = site_url().'uploads/'.$product_data['zip2']; 
-                                 if($product_data['zip2']){
+                                 <?php $zip2_url = site_url().'uploads/'.$product_data['zip3']; 
+                                 if($product_data['zip3']){
                                  ?>
                                  
-                                 <a href="<?= $zip2_url ?>" download>Download Zip </a><br>
+                                 <a href="<?= $zip3_url ?>" download>Download </a><br>
                                  <?php } ?>
-                                 <input type="hidden"  name="zip2"  value="<?php echo $product_data['zip2']; ?>" class="form-control" placeholder=""> 
-                                <input name='userfile2' type="file" class="file-input">
+                                 <input type="hidden"  name="zip3"  value="<?php echo $product_data['zip3']; ?>" class="form-control" placeholder=""> 
+                                <input name='userfile3' type="file" class="file-input">
                              </div>
                           </div>      
                            <!-- Enterprise Image -->

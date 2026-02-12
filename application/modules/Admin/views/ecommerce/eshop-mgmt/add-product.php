@@ -65,7 +65,7 @@
                      </div>
                   </div>
                   <div class="form-group">
-                     <label class="col-lg-3 control-label">Product Main Image<span class="required-field">*</span>:</label>
+                     <label class="col-lg-3 control-label">Image<span class="required-field">*</span>:</label>
                      <div class="col-lg-9">
                         <input name='product_image' type="file" class="file-input">
                      </div>
@@ -105,6 +105,12 @@
                                 <input type="text"  name="price1" class="form-control" placeholder="Price">
                              </div>
                           </div>
+                          <div class="form-group">
+                             <label class="col-lg-3 control-label">No Of Sessions<span class="required-field">*</span>:</label>
+                             <div class="col-lg-9">
+                                <input type="text"  name="calls1" class="form-control" placeholder="No Of Sessions">
+                             </div>
+                          </div>
                            <div class="form-group">
                              <label class="col-lg-3 control-label">Description<span class="required-field">*</span>:</label>
                              <div class="col-lg-9">
@@ -112,7 +118,7 @@
                              </div>
                           </div>
                           <div class="form-group">
-                             <label class="col-lg-3 control-label">(Basic) Zip file<span class="required-field">*</span>:</label>
+                             <label class="col-lg-3 control-label">Upload file<span class="required-field">*</span>:</label>
                              <div class="col-lg-9">
                                  
                                 <input name='userfile1' type="file" class="file-input" required>
@@ -145,6 +151,12 @@
                                     <input type="text"  name="price2" class="form-control" placeholder="Price">
                                  </div>
                               </div>
+                          <div class="form-group">
+                             <label class="col-lg-3 control-label">No Of Sessions<span class="required-field">*</span>:</label>
+                             <div class="col-lg-9">
+                                <input type="text"  name="calls2" class="form-control" placeholder="No Of Sessions">
+                             </div>
+                          </div>
                               <div class="form-group">
                                  <label class="col-lg-3 control-label">Description:</label>
                                  <div class="col-lg-9">
@@ -152,7 +164,7 @@
                                  </div>
                               </div>
                                <div class="form-group">
-                                 <label class="col-lg-3 control-label">(Pro) Zip file<span class="required-field">*</span>:</label>
+                                 <label class="col-lg-3 control-label">Upload file<span class="required-field">*</span>:</label>
                                  <div class="col-lg-9">
                                      
                                     <input name='userfile2' type="file" class="file-input" required>
@@ -187,13 +199,19 @@
                              </div>
                           </div>
                           <div class="form-group">
+                             <label class="col-lg-3 control-label">No Of Session<span class="required-field">*</span>:</label>
+                             <div class="col-lg-9">
+                                <input type="text"  name="calls3" class="form-control" placeholder="No Of Sessions">
+                             </div>
+                          </div>
+                          <div class="form-group">
                              <label class="col-lg-3 control-label">Description:</label>
                              <div class="col-lg-9">
                                 <textarea id="description1" name="long_description" class="col-lg-3 control-label"></textarea>
                              </div>
                           </div>
                            <div class="form-group">
-                             <label class="col-lg-3 control-label">Zip file<span class="required-field">*</span>:</label>
+                             <label class="col-lg-3 control-label">Upload file<span class="required-field">*</span>:</label>
                              <div class="col-lg-9">
                                  
                                 <input name='userfile3' type="file" class="file-input" required>
@@ -374,3 +392,6 @@ button.accordion-button {
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+  

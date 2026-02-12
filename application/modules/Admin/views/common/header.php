@@ -295,6 +295,15 @@ if($admin->type=='sub_admin' && ($_SERVER['REQUEST_URI']=='/Admin' || $_SERVER['
                      <li class="nav-item"><a href="<?php echo ci_site_url();?>Admin/company" class="nav-link"><i class="fas fa-angle-right"></i>Company Profile</a></li>
                   </ul>
                </li>
+               <li class="nav-item sidebar-nav-item">
+                  <a href="#" class="nav-link"><i class="fas fa-angle-right"></i> <span>Message Panel</span></a>
+                  <ul class="nav sub-group-menu">
+                     <li class="nav-item"><a href="<?php echo ci_site_url();?>Admin/MessagePanel/composeMessage" class="nav-link"><i class="fas fa-angle-right"></i>Compose Message</a></li>
+                     <li class="nav-item"><a href="<?php echo ci_site_url();?>Admin/MessagePanel/inbox" class="nav-link"><i class="fas fa-angle-right"></i>Inbox</a></li>
+                     <li class="nav-item"><a href="<?php echo ci_site_url();?>Admin/MessagePanel/sentMessage" class="nav-link"><i class="fas fa-angle-right"></i>Sent Message</a></li>
+                  </ul>
+               </li>
+               
 			   <!-- <li class="nav-item sidebar-nav-item">
                   <a href="#" class="nav-link"><i class="fas fa-angle-right"></i> <span>Google Meet</span></a>
                   <ul class="nav sub-group-menu">

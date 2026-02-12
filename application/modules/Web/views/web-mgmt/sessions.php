@@ -10,7 +10,7 @@
                 <div class="breadcrumbs-menu">
                     <ul>
                         <li><a href="<?php echo base_url();?>">Home</a></li>
-                        <li><a href="#" class="active">My Account</a></li>
+                        <li><a href="#" class="active">my-account</a></li>
                     </ul>
                 </div>
             </div>
@@ -24,7 +24,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="entry-header-title">
-                    <h2>My Account</h2>
+                    <h2>My-Account</h2>
                 </div>
             </div>
         </div>
@@ -51,10 +51,10 @@
                             <div class="col-lg-9 col-md-8">
                                 <div class="tab-content" id="myaccountContent">
                                     <!-- Single Tab Content Start -->
-                                    <div class="tab-pane fade show active" id="dashboad" role="tabpanel">
+                                    <div class="tab-pane fade" id="dashboad" role="tabpanel">
                                         <div class="myaccount-content">
-                                            <h5>Welcome <?php echo $this->session->userdata('username'); ?></h5>
-                                            <!-- <div class="welcome">
+                                            <h5>Dashboard</h5>
+                                            <div class="welcome">
                                                 <p>Hello,
                                                     <strong><?php echo $this->session->userdata('username'); ?></strong>
                                                     (If Not
@@ -63,142 +63,10 @@
                                                         class="logout">
                                                         Logout</a>)
                                                 </p>
-                                            </div> -->
+                                            </div>
                                             <!--<p class="mb-0">From your account dashboard. you can easily check &
                                                         view your recent orders, manage your shipping and billing addresses
                                                         and edit your password and account details.</p>-->
-                                            <div class="row mt-3 mb-3">
-                                                
-                                                <!-- Users -->
-                                                <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-primary border-2" style="cursor:pointer;" onclick="redirect('experts')">
-                                                        <?php 
-															//  echo '<pre>';
-															//  print_r($_SESSION['userType']);
-															//  exit;
-															if($_SESSION['userType'] == '2')
-															{
-															?>
-                                                        <div class="card-body">
-                                                            <div class="icon text-primary mb-2"><i
-                                                                    class="bi bi-people-fill"></i></div>
-                                                            <h5 class="card-title">Expert</h5>
-                                                            <h2 class="fw-bold"><?php echo $expert_count; ?></h2>
-                                                        </div>
-
-                                                        <?php
-															} else{
-															?>
-                                                        <div class="card-body">
-                                                            <div class="icon text-primary mb-2"><i
-                                                                    class="bi bi-people-fill"></i></div>
-                                                            <h5 class="card-title">Customer</h5>
-                                                            <h2 class="fw-bold"><?php echo $customer_count; ?></h2>
-                                                        </div>
-
-                                                        <?php
-															}
-															?>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Orders -->
-                                                <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-success border-2" style="cursor:pointer;" onclick="redirect('orders')">
-                                                        <div class="card-body">
-                                                            <div class="icon text-success mb-2"><i
-                                                                    class="bi bi-bag-fill"></i></div>
-                                                            <h5 class="card-title">Orders</h5>
-                                                            <h2 class="fw-bold"><?php echo $orders_count;?></h2>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                
-                                                <?php 
-														if($_SESSION['userType'] == '2')
-															{
-															?>
-                                                            <!-- Products -->
-                                                <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-warning border-2">
-                                                        <div class="card-body">
-                                                            <div class="icon text-warning mb-2"><i
-                                                                    class="bi bi-box-seam"></i></div>
-                                                            <h5 class="card-title">Wallet</h5>
-                                                            <h2 class="fw-bold"><?php echo currency(); echo ($walletpayment)?$walletpayment:0;?></h2>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-warning border-2" style="cursor:pointer;" onclick="redirect('sessions')">
-                                                        <div class="card-body">
-                                                            <div class="icon text-warning mb-2"><i
-                                                                    class="bi bi-phone"></i></div>
-                                                            <h5 class="card-title">Requested</h5>
-                                                            <h2 class="fw-bold"><?php echo ($totalrcalls)?$totalrcalls:0;?></h2>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                
-                                                <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-warning border-2" style="cursor:pointer;" onclick="redirect('sessions')">
-                                                        <div class="card-body">
-                                                            <div class="icon text-warning mb-2"><i
-                                                                    class="bi bi-phone"></i></div>
-                                                            <h5 class="card-title">Approved</h5>
-                                                            <h2 class="fw-bold"><?php echo ($totalacalls)?$totalacalls:0;?></h2>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-warning border-2" style="cursor:pointer;" onclick="redirect('sessions')">
-                                                        <div class="card-body">
-                                                            <div class="icon text-warning mb-2"><i
-                                                                    class="bi bi-phone"></i></div>
-                                                            <h5 class="card-title">Sessions</h5>
-                                                            <h2 class="fw-bold"><?php echo ($totalcalls)?$totalcalls:0;?></h2>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-warning border-2" style="cursor:pointer;" onclick="redirect('sessions')">
-                                                        <div class="card-body">
-                                                            <div class="icon text-warning mb-2"><i
-                                                                    class="bi bi-phone"></i></div>
-                                                            <h5 class="card-title">Connected</h5>
-                                                            <h2 class="fw-bold"><?php echo ($usedcalls)?$usedcalls:0;?></h2>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-warning border-2" style="cursor:pointer;" onclick="redirect('sessions')">
-                                                        <div class="card-body">
-                                                            <div class="icon text-warning mb-2"><i
-                                                                    class="bi bi-phone"></i></div>
-                                                            <h5 class="card-title">Remaining</h5>
-                                                            <h2 class="fw-bold"><?php echo ($remaining_calls)?$remaining_calls:0;?></h2>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <?php
-														}
-														?>
-                                                <!-- Revenue -->
-                                                <!-- <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-danger border-2">
-                                                        <div class="card-body">
-                                                            <div class="icon text-danger mb-2"><i
-                                                                    class="bi bi-currency-dollar"></i></div>
-                                                            <h5 class="card-title">Upgrade</h5>
-                                                            <h2 class="fw-bold">$300</h2>
-                                                        </div>
-                                                    </div>
-                                                </div> -->
-                                            </div>
                                             
                                         </div>
                                     </div>
@@ -208,73 +76,147 @@
                                     <!-- Single Tab Content Start -->
                                     <div class="tab-pane fade show active" id="orders" role="tabpanel">
                                         <div class="myaccount-content">
-                                                <h5>Latest Orders</h5>
-                                                <?php
-                                                    if(count($latesorders)>0)
-                                                    {
-                                                    ?>
-                                                <div class="myaccount-table table-responsive text-center">
-                                                    <table class="table table-bordered">
-                                                        <thead class="thead-light">
-                                                            <tr>
-                                                                <th>Order</th>
-                                                                <th>Date</th>
-                                                                <!--<th>Status</th>-->
-                                                                <th>Total</th>
-                                                                <th>Action</th>
-                                                                <th>Download</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <?php
+                                            <h5>Sessions</h5>
+                                            <div class="myaccount-table table-responsive text-center">
+                                                <table class="table table-bordered">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th>Expert Person</th>
+                                                            <th>Session Date</th>
+                                                            
+                                                            <th>Status</th>
+                                                            <th>Link</th>
+                                                            <th>Calls</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php
                                                                 $s=1;
-                                                                foreach($latesorders as $key=>$val)
+                                                                foreach($calls as $key=>$val)
                                                                 {
                                                                 ?>
-                                                            <tr>
-                                                                <td><?php echo $val->order_id; ?></td>
-                                                                <td><?php echo $val->order_date; ?></td>
-                                                                <!--<td><?php echo $val->order_status; ?></td>-->
-                                                                <td><?php echo currency() . $val->final_price; ?></td>
-                                                                <td><a href="<?php echo base_url(); ?>invoice?order_id=<?php echo $val->order_id; ?>"
-                                                                        class="btn btn-sqr">View Invoice</a>
-                                                                </td>
-                                                                <td><a href="<?php echo base_url(); ?>invoice?order_id=<?php echo $val->order_id; ?>"
-                                                                        class="btn btn-sqr"><i
-                                                                            class="fa fa-cloud-download"></i>
-                                                                        Download File</a></td>
-                                                            </tr>
-                                                            <?php
+                                                        <tr>
+                                                            <td><?php echo get_user_name($val->expert_id); ?></td>
+                                                            <td><?php echo $val->requested_date; ?></td>
+                                                            
+                                                            <td>
+                                                                <?php 
+                                                                $status = strtolower($val->status);
+                                                                $badge_color = '';
+                                                                
+                                                                switch($status) {
+                                                                    case 'active':
+                                                                    case 'approved':
+                                                                    case 'completed':
+                                                                    case 'confirmed':
+                                                                        $badge_color = 'badge bg-success';
+                                                                        break;
+                                                                    case 'pending':
+                                                                    case 'waiting':
+                                                                        $badge_color = 'badge bg-warning text-dark';
+                                                                        break;
+                                                                    case 'cancelled':
+                                                                    case 'rejected':
+                                                                    case 'failed':
+                                                                        $badge_color = 'badge bg-danger';
+                                                                        break;
+                                                                    case 'ongoing':
+                                                                    case 'in-progress':
+                                                                        $badge_color = 'badge bg-info';
+                                                                        break;
+                                                                    default:
+                                                                        $badge_color = 'badge bg-secondary';
                                                                 }
                                                                 ?>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                <?php
-                                                    }
-                                                    else
-                                                    {
-                                                       ?>
-                                                <p class="mb-0">No Recent Orders</p>
-                                                <?php
-                                                    }
-                                                    ?>
+                                                                <span class="<?php echo $badge_color; ?>">
+                                                                    <?php echo ucfirst($val->status); ?>
+                                                                </span>
+                                                            </td>
+                                                            <!-- <td><a href="<?php echo ($val->meet_link)?$val->meet_link:'javascript:void(0);'; ?>">Start Session</a></td> -->
+                                                            
+                                                          
+                                                        <td>
+                                                            <?php if($val->meet_link && $val->status == 'active'): ?>
+                                                                <a href="<?php echo $val->meet_link; ?>" 
+                                                                   class="btn btn-sm btn-success d-flex align-items-center gap-2"
+                                                                   target="_blank">
+                                                                    <i class="bi bi-camera-video-fill"></i>
+                                                                    <span>Start</span>
+                                                                </a>
+                                                            <?php elseif($val->meet_link): ?>
+                                                                <a href="<?php echo $val->meet_link; ?>" 
+                                                                   class="btn btn-sm btn-outline-success d-flex align-items-center gap-2"
+                                                                   target="_blank">
+                                                                    <i class="bi bi-link-45deg"></i>
+                                                                    <span>Link</span>
+                                                                </a>
+                                                            <?php else: ?>
+                                                                <span class="text-muted d-flex align-items-center gap-2">
+                                                                    <i class="bi bi-clock"></i>
+                                                                    <span>Pending</span>
+                                                                </span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                        <td>
+                                                            <?php if($val->meet_link && $val->status == 'active'): ?>
+                                                                <a href="<?php echo $val->meet_link; ?>" 
+                                                                   class="btn btn-sm btn-success d-flex align-items-center gap-2"
+                                                                   target="_blank">
+                                                                    <i class="bi bi-camera-video-fill"></i>
+                                                                    <span>Start Call</span>
+                                                                </a>
+                                                            <?php elseif($val->meet_link): ?>
+                                                                <a href="<?php echo $val->meet_link; ?>" 
+                                                                   class="btn btn-sm btn-outline-success d-flex align-items-center gap-2"
+                                                                   target="_blank">
+                                                                    <i class="bi bi-link-45deg"></i>
+                                                                    <span>Joined</span>
+                                                                </a>
+                                                            <?php else: ?>
+                                                                <span class="text-muted d-flex align-items-center gap-2">
+                                                                    <i class="bi bi-clock"></i>
+                                                                    <span>N/A</span>
+                                                                </span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                        </tr>
+                                                        <?php
+                                                                }
+                                                                ?>
+                                                        <!--<tr>
+                                                                    <td>2</td>
+                                                                    <td>July 22, 2018</td>
+                                                                    <td>Approved</td>
+                                                                    <td>$200</td>
+                                                                    <td><a href="cart.html" class="btn btn-sqr">View</a>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>3</td>
+                                                                    <td>June 12, 2017</td>
+                                                                    <td>On Hold</td>
+                                                                    <td>$990</td>
+                                                                    <td><a href="cart.html" class="btn btn-sqr">View</a>
+                                                                    </td>
+                                                                </tr>-->
+                                                    </tbody>
+                                                </table>
                                             </div>
+                                        </div>
                                     </div>
                                     <!-- Single Tab Content Start -->
-                                    <div class="tab-pane fade show active" id="expert_booking" role="tabpanel">
+                                    <div class="tab-pane fade" id="expert_booking" role="tabpanel">
                                         <div class="myaccount-content">
-                                            <h5>Connect with Experts</h5>
+                                            <h5>Expert Booking</h5>
                                             <!-- <select id="expertSelect" class="form-select mb-3">
-														<option value="">-- Select Expert --</option>
-														<?php foreach ($expert_list as $ex) { ?>
-														<option value="<?= $ex->user_id ?>">
-															<?= $ex->first_name . ' ' . $ex->last_name ?>     (ID: <?= $ex->user_id ?>)
-														</option>
-														<?php } ?>
-														</select> -->
+                                                        <option value="">-- Select Expert --</option>
+                                                        <?php foreach ($expert_list as $ex) { ?>
+                                                        <option value="<?= $ex->user_id ?>">
+                                                            <?= $ex->first_name . ' ' . $ex->last_name ?>     (ID: <?= $ex->user_id ?>)
+                                                        </option>
+                                                        <?php } ?>
+                                                        </select> -->
                                             <div class="row">
-                                                <?php if($totalcalls){?>
                                                 <div class="col-md-9">
                                                     <div id="customerCalendar"></div>
                                                 </div>
@@ -286,28 +228,21 @@
                                                 </div>
 
                                                 <!-- <div id="customerCalendar"></div> -->
-                                                
                                                 <button class="btn btn-primary mt-2" onclick="openRequestModal()">
                                                     Add Request
                                                 </button>
-                                                <?php
-                                                }
-                                                else
-                                                {
-                                                    echo "<p style='color:red'>You dont have any sessions count. Please purchase sessions.</p>";
-                                                }
-                                                ?>
-                                                <!-- <div class="col-md-9 card">
-													<div id="calendar_customer" class="card-body"></div>
-													</div> -->
-                                                <!-- <div class="col-md-3 card">
-													<div id="infoBoxExpert" class="mt-2">
 
-													<h3 id="titleExpert">Select Date</h3>
-													<h5 id="dateExpert"></h5>
-													<p id="descExpert"></p>
-													</div>
-													</div> -->
+                                                <!-- <div class="col-md-9 card">
+                                                    <div id="calendar_customer" class="card-body"></div>
+                                                    </div> -->
+                                                <!-- <div class="col-md-3 card">
+                                                    <div id="infoBoxExpert" class="mt-2">
+
+                                                    <h3 id="titleExpert">Select Date</h3>
+                                                    <h5 id="dateExpert"></h5>
+                                                    <p id="descExpert"></p>
+                                                    </div>
+                                                    </div> -->
                                             </div>
 
                                         </div>
@@ -997,21 +932,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 filtered.forEach(ev => {
                     descHtml += `
                        <div class="border p-2 mb-2 rounded">
-							<b>${ev.title}</b><br>
-							${ev.description}<br>
+                            <b>${ev.title}</b><br>
+                            ${ev.description}<br>
 
-							<button 
-								class="btn btn-sm btn-warning mt-1"
-								onclick="editEvent(${ev.id})">
-								Edit
-							</button>
+                            <button 
+                                class="btn btn-sm btn-warning mt-1"
+                                onclick="editEvent(${ev.id})">
+                                Edit
+                            </button>
 
-							<button 
-								class="btn btn-sm btn-danger mt-1"
-								onclick="deleteEvent(${ev.id})">
-								Delete
-							</button>
-						</div>
+                            <button 
+                                class="btn btn-sm btn-danger mt-1"
+                                onclick="deleteEvent(${ev.id})">
+                                Delete
+                            </button>
+                        </div>
                     `;
                 });
 
@@ -1441,10 +1376,5 @@ function sendRequest() {
             }
         }
     });
-}
-
-function redirect(page)
-{
-    window.location.href=page;
 }
 </script>

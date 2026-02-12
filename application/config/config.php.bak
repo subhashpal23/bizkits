@@ -23,7 +23,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = 'http://localhost/codeIgniter-hmvc/';
+if($_SERVER['HTTP_HOST']=="localhost")
+{
+$config['base_url'] = 'http://localhost/bizkitsnew/bizkits/';
+}
+else 
+{
+$config['base_url'] = 'https://'.$_SERVER['HTTP_HOST']."/bizkits/";
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -52,7 +59,7 @@ $config['index_page'] = '';
 |
 | WARNING: If you set this to 'PATH_INFO', URIs will always be URL-decoded!
 */
-$config['uri_protocol']	= 'REQUEST_URI';
+$config['uri_protocol']	= 'AUTO';
 
 /*
 |--------------------------------------------------------------------------
@@ -160,7 +167,8 @@ $config['composer_autoload'] = FALSE;
 | DO NOT CHANGE THIS UNLESS YOU FULLY UNDERSTAND THE REPERCUSSIONS!!
 |
 */
-$config['permitted_uri_chars'] = 'a-z 0-9~%.:_\-';
+//$config['permitted_uri_chars'] = 'a-z 0-9~%.:_\-';
+$config['permitted_uri_chars'] = 'a-z 0-9~%.:_\-@\=';
 
 /*
 |--------------------------------------------------------------------------
@@ -225,8 +233,8 @@ $config['allow_get_array'] = TRUE;
 | your log files will fill up very fast.
 |
 */
-$config['log_threshold'] = 0;
-ini_set('error_reporting', E_ALL & ~E_DEPRECATED);
+$config['log_threshold'] = 4;
+ini_set('error_reporting', E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING);
 $config['modules_locations'] = array(
     APPPATH . 'modules/' => '../modules/',
 );

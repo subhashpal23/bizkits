@@ -696,7 +696,10 @@ class Eshop extends Common_Controller
 			
 			$result_zip3 = upload_zip_file('userfile3', './uploads/', 100240); // 100MB
 			$file_zip3= $result_zip3['data']['file_name'];
-					 
+					
+			$calls1=$this->input->post('calls1');
+			$calls2=$this->input->post('calls2');
+			$calls3=$this->input->post('calls3'); 
 			$insert_data = array(
 			'user_id'=>$this->user_id,
             'parent_category_id'=>$parent_category_id,
@@ -708,6 +711,9 @@ class Eshop extends Common_Controller
             'price1' => $price1,
 			'price2'=>$price2,
 			'price3'=>$price3,
+			'calls1' => $calls1,
+			'calls2'=>$calls2,
+			'calls3'=>$calls3,
 			'status'=>$status,
 			'description'=>$description,
 			'description2'=>$description2,

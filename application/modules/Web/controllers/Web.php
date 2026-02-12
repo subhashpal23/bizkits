@@ -23,8 +23,107 @@ class Web extends Common_Controller
         $this->load->model('user/package_model');
         $this->load->model('user/ewallet_model');
         $this->load->model('auth_model', 'auth');
+        $this->load->model('member_model');
+        $this->load->model('message_panel_model');
     }
 
+    public function inbox()
+    {
+        $data=array();
+        $login_user_id=$this->session->userdata('user_id');
+        $data['all_inbox_msg']=$this->message_panel_model->getAllInboxMessage($login_user_id);
+        _adminLayout("web-mgmt/inbox",$data);
+    }
+    function deleteInboxMessage($id)
+    {
+        $id=ID_decode($id);
+        $this->db->delete("message",array('id'=>$id));
+        $this->session->set_flashdata("flash_msg", '<span class="text-semibold">Well done!</span> Message is deleted successfully.');
+        redirect(ci_site_url() . "admin/MessagePanel/inbox");
+        exit;
+    }
+    function generateMessageId()
+    {
+        $random_number="M".mt_rand(100000, 999999);
+        if($this->db->select('message_id')->from('message')->where('message_id',$random_number)->get()->num_rows()>0)
+        {
+          $this->generateMessageId();
+        }
+        return $random_number;
+    }//end function
+    public function composeMessage()
+    {
+        $login_user_id=$this->session->userdata('user_id');
+        $login_user_name=$this->session->userdata('username');
+        if(!empty($this->input->post("btn")))
+        {
+            $all_users=$this->input->post('users');
+            //pr($all_users);
+            $subject=$this->input->post('subject');
+            $message=$this->input->post('message');
+            $message_id=$this->generateMessageId();
+            $attachment='';
+            if(!empty($_FILES['attachment']))
+            {
+                $image_upload_path='/uploads/images/';
+                $attachment=adImageUpload($_FILES['attachment'],1, $image_upload_path);
+            }
+            ////////////////////////////////
+            foreach($all_users as $user_id)
+            {
+                $compose_to[]=array(
+                    'message_id'=>$message_id,
+                    'user_id'=>$user_id,
+                    'subject'=>$subject,
+                    'message'=>$message,
+                    'reciever_id'=>$user_id,
+                    'sender_id'=>$login_user_id,
+                    'reciever_name'=>get_user_name($user_id),
+                    'sender_name'=>$login_user_name,
+                    'attachment'=>$attachment
+                    );
+            }
+            $this->db->insert_batch("message",$compose_to);
+            $this->db->insert("message",array(
+                    'message_id'=>$message_id,
+                    'user_id'=>$login_user_id,
+                    'subject'=>$subject,
+                    'message'=>$message,
+                    'sender_id'=>$login_user_id,
+                    'sender_name'=>$login_user_name,
+                    'attachment'=>$attachment
+                    ));
+            $this->session->set_flashdata("flash_msg", '<span class="text-semibold">Well done!</span> Message is sent successfully');
+            redirect(ci_site_url() . "Web/sentMessage");
+            exit;
+        }
+        $data=array();
+        $data['all_active_members']=$this->member_model->getAllActiveMembers();
+        _adminLayout("web-mgmt/compose-message",$data);
+    }//end method
+    public function sentMessage()
+    {
+        $user_id=$this->session->userdata('user_id');
+        $data=array();
+        $data['all_sent_msg']=$this->message_panel_model->getAllSentMessage($user_id);
+        _adminLayout("web-mgmt/sent-message",$data);
+    }
+    function deleteSentMessage($id)
+    {
+        $id=ID_decode($id);
+        $this->db->delete("message",array('id'=>$id));
+        $this->session->set_flashdata("flash_msg", '<span class="text-semibold">Well done!</span> Message is deleted successfully.');
+        redirect(ci_site_url() . "Web/sentMessage");
+        exit;
+    }
+    public function readMessage($message_id=null)
+    {
+        $message_id=(!empty($message_id))?$message_id:$this->input->post('msg_id');
+        $id=ID_decode($message_id);
+        sleep(1);
+        $msg=$this->db->select('m.*')->from('message as m')->where('id',$id)->get()->row();
+        $this->output->set_content_type('application/json')->set_output(json_encode($msg));
+    }
     public function checknom()
     {
         $upliner_id = '1932746';
@@ -1324,6 +1423,7 @@ class Web extends Common_Controller
     public function billInvoice()
     {
 		// 
+        //pr($this->session->userdata()); exit;
         $data = [];
         $user_id = $this->session->userdata('user_id');
         // print_r($this->session->userdata()); exit;
@@ -1334,11 +1434,11 @@ class Web extends Common_Controller
         $paypal_transaction_id = $this->input->post('paypal_transaction_id');
         // pr($paypal_transaction_id); exit;
         $payment_response = $this->capture_order_check($paypal_transaction_id);
-        // pr($payment_response);
+        //pr($payment_response); exit;
         // exit();
         if ($user_id != '' && $auth_affiliate) {
             // pr($this->session->userdata('total_products')); exit;
-            if (!empty($this->session->userdata('cart_reg')) && !empty($this->session->userdata('total_products')) && !empty($this->session->userdata('cart_final_price'))) {
+            if (!empty($this->session->userdata('cart_reg')) && !empty($this->session->userdata('total_products'))) {
                 $cart = (object) $this->session->userdata('cart_reg');
                 $order_id = $this->generateUniqueOrderId();
                 // pr($cart); exit;
@@ -1359,57 +1459,57 @@ class Web extends Common_Controller
     }*/
 
                 foreach ($cart as $product) {
-                    // pr($product);exit;
+                    //pr($product);exit;
                     $product = (object) $product;
                     $product_stock_info = $this->db
-                        ->select(['qty', 'total_order', 'guest_point', 'new_price'])
+                        ->select('*')
                         ->from('eshop_products')
                         ->where('id', $product->product_id)
                         ->get()
                         ->row();
+                    $package=$product->package;
                     $final_stock = $product_stock_info->qty - $product->qty;
                     $total_product_qty = $total_product_qty + $product->qty;
                     $total_order = $product_stock_info->total_order + 1;
                     $guest_point = $product_stock_info->guest_point;
-                    $new_price = $product_stock_info->new_price;
-                    $this->db->update('eshop_products', ['qty' => $final_stock, 'total_order' => $total_order], ['id' => $product->product_id]);
-                    $this->db->update('eshop_stock', ['qty' => $final_stock], ['product_id' => $product->product_id]);
-                    /*$stock_info=$this->db->select('qty')->from('user_products')->where(array('user_id'=>$user_id,'product_id'=>$product->product_id))->get()->row();
-    $stock_qty=$stock_info->qty+$product->qty;
-    $this->db->update('user_products',array('qty'=>$stock_qty),array('user_id'=>$user_id,'product_id'=>$product->product_id));*/
+                    if($package=='Basic')
+                    {
+                        $new_price = $product_stock_info->price1;
+                        $calls = $product_stock_info->calls1;
+                    }
+                    else if($package=='Economy')
+                    {
+                        $new_price = $product_stock_info->price2;
+                        $calls = $product_stock_info->calls2;
+                    }
+                    else if($package=='Enterprise')
+                    {
+                        $new_price = $product_stock_info->price3;
+                        $calls = $product_stock_info->calls3;
+                    }
+                    
 
-                    /*$stock_count=$this->db->select('*')->from('eshop_stock_stockist')->where(array('product_id'=>$product->product_id,'stockist_id'=>$user_id))->get()->num_rows();
-    //echo $this->db->last_query(); exit;
-    if($stock_count)
-    {
-    $stock_info=$this->db->select('*')->from('eshop_stock_stockist')->where(array('product_id'=>$product->product_id,'stockist_id'=>$user_id))->get()->row();
-    $user_final_stock=$stock_info->qty+$product->qty;
-    $this->db->update('eshop_stock_stockist',array('qty'=>$user_final_stock),array('product_id'=>$product->product_id,'stockist_id'=>$user_id));
-    $this->db->insert('eshop_stock_stockist_history',array('qty'=>$user_final_stock,'product_id'=>$product->product_id,'stockist_id'=>$user_id,'order_id'=>$order_id));
-    }
-    else
-    {
-    $user_final_stock=$product->qty;
-    $this->db->insert('eshop_stock_stockist',array('qty'=>$user_final_stock,'product_id'=>$product->product_id,'stockist_id'=>$user_id));
-    $this->db->insert('eshop_stock_stockist_history',array('qty'=>$user_final_stock,'product_id'=>$product->product_id,'stockist_id'=>$user_id,'order_id'=>$order_id));
-    }*/
+                    
+                    //$this->db->update('eshop_products', ['qty' => $final_stock, 'total_order' => $total_order], ['id' => $product->product_id]);
+                    //$this->db->update('eshop_stock', ['qty' => $final_stock], ['product_id' => $product->product_id]);
 
-                    /*$stock_count=$this->db->select('*')->from('eshop_stock_stockist')->where(array('product_id'=>$product->product_id,'stockist_id'=>$user_id,'start_date >='>$date,'end_date <='=>$date))->get()->num_rows();
-    if($stock_count)
-    {
-    $stock_info=$this->db->select('*')->from('eshop_stock_stockist')->where(array('product_id'=>$product->product_id,'stockist_id'=>$user_id))->get()->row();
-    $user_final_stock=$stock_info->qty+$product->qty;
-    $this->db->update('eshop_stock_stockist',array('qty'=>$user_final_stock),array('product_id'=>$product->product_id,'stockist_id'=>$user_id,'start_date >='>$date,'end_date <='=>$date));
-    $this->db->insert('eshop_stock_stockist_history',array('type'=>1,'qty'=>$product->qty,'product_id'=>$product->product_id,'stockist_id'=>$user_id,'order_id'=>$order_id));
-    }
-    else
-    {
-    $fdate=date('Y-m-01');
-    $tdate=date('Y-m-31');
-    $user_final_stock=$product->qty;
-    $this->db->insert('eshop_stock_stockist',array('qty'=>$user_final_stock,'product_id'=>$product->product_id,'stockist_id'=>$user_id,'start_date >='>$fdate,'end_date <='=>$tdate));
-    $this->db->insert('eshop_stock_stockist_history',array('type'=>1,'qty'=>$product->qty,'product_id'=>$product->product_id,'stockist_id'=>$user_id,'order_id'=>$order_id));
-    }*/
+                    // update number of calls
+                    
+                    // check all call of user
+                    $callusercount=$this->db->select('*')->from('user_calls')->where('user_id',$user_id)->get()->num_rows();
+                    if($callusercount)
+                    {
+                        $calluser_info=$this->db->select('*')->from('user_calls')->where('user_id',$user_id)->get()->row();
+                        $callid=$calluser_info->id;
+                        $total_calls1=$calluser_info->total_calls+$calls;
+                        $remaining_calls1=$calluser_info->remaining_calls+$calls;
+                        $this->db->update('user_calls',array('total_calls'=>$total_calls1,'remaining_calls'=>$remaining_calls1),array('id'=>$callid));
+                    }
+                    else
+                    {
+                        $this->db->insert('user_calls',array('user_id'=>$user_id,'total_calls'=>$calls,'remaining_calls'=>$calls));
+                    }
+                    
 
                     $product_id = $product->product_id;
                     $cart_final_price = $this->session->userdata('cart_final_price');
@@ -1521,7 +1621,7 @@ class Web extends Common_Controller
 					'amount'      => $amount,
 					'paid_at'     => date('d M Y, h:i A') // 👈 Date & Time
 				));
-                redirect(site_url() . 'dashboard?order_id=' . $order_id);
+                redirect(site_url() . 'invoice?order_id=' . $order_id);
                 exit();
             } else {
                 redirect(site_url() . 'Web');
@@ -1637,7 +1737,20 @@ class Web extends Common_Controller
         }
         $user_id = $_SESSION['user_id'];
         $data['user'] = $this->front_model->get_user_by_id($user_id);
-        $data['orders'] = $this->db->select('*')->from('eshop_orders')->where('user_id', $user_id)->order_by('id', 'desc')->get()->result();
+        $data['orders_count'] = $this->db->select('*')->from('eshop_orders')->where('user_id', $user_id)->order_by('id', 'desc')->get()->num_rows();
+        $paymentinfo=$this->db->select_sum('amount')->from('payment_paypal')->where('user_id', $user_id)->get()->row();
+        $data['totalpayment'] = $paymentinfo->amount;
+        $paymentinfo=$this->db->select_sum('amount')->from('final_e_wallet')->where('user_id', $user_id)->get()->row();
+        $data['walletpayment'] = $paymentinfo->amount;
+        $paymentinfo=$this->db->select('*')->from('user_calls')->where('user_id', $user_id)->get()->row();
+        $data['totalcalls'] = $paymentinfo->total_calls;
+        $data['usedcalls'] = $paymentinfo->used_calls;
+        $data['remaining_calls'] = $paymentinfo->remaining_calls;
+        $totalrequest=$this->db->select('*')->from('customer_meeting_requests')->where('customer_id', $user_id)->get()->num_rows();
+        $data['totalrcalls'] = $totalrequest;
+        $totalapproved=$this->db->select('*')->from('customer_meeting_requests')->where(array('customer_id'=>$user_id,'status'=>'approved'))->get()->num_rows();
+        $data['totalacalls'] = $totalapproved;
+        
         $data['products'] = $this->db->select('*')->from('eshop_products')->order_by('id', 'desc')->get()->result();
         $data['latesorders'] = $this->db
             ->select('*')
@@ -1674,6 +1787,390 @@ class Web extends Common_Controller
 		->result();	
 		// pr($data['payments']);exit;
         _frontLayout('web-mgmt/dashboard', $data);
+    }
+    public function googlemeet()
+    {
+        if (!$this->session->userdata('auth_affiliate')) {
+            redirect(ci_site_url() . 'login');
+            exit();
+        }
+        $user_id = $_SESSION['user_id'];
+        $data['user'] = $this->front_model->get_user_by_id($user_id);
+        $data['orders_count'] = $this->db->select('*')->from('eshop_orders')->where('user_id', $user_id)->order_by('id', 'desc')->get()->num_rows();
+        $paymentinfo=$this->db->select_sum('amount')->from('payment_paypal')->where('user_id', $user_id)->get()->row();
+        $data['totalpayment'] = $paymentinfo->amount;
+        $paymentinfo=$this->db->select('*')->from('user_calls')->where('user_id', $user_id)->get()->row();
+        $data['totalcalls'] = $paymentinfo->total_calls;
+        $data['usedcalls'] = $paymentinfo->used_calls;
+        $data['products'] = $this->db->select('*')->from('eshop_products')->order_by('id', 'desc')->get()->result();
+        $data['latesorders'] = $this->db
+            ->select('*')
+            ->from('eshop_orders')
+            ->where(['user_id' => $user_id, 'DATE(order_date)' => date('Y-m-d')])
+            ->order_by('id', 'desc')
+            ->get()
+            ->result();
+        $data['customer_count'] = $this->db->from('user_registration')->where('member_type', 2)->count_all_results();
+        $data['expert_count'] = $this->db->from('user_registration')->where('member_type', 1)->count_all_results();
+        $date['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
+        $data['experts'] = $this->db
+            ->select('*')
+            ->from('user_registration')
+            ->where('member_type', 1) // expert
+            ->get()
+            ->result();
+        $data['expert_list'] = $this->db
+            ->select('u.user_id, u.first_name, u.last_name, u.username, u.email')
+            ->from('expert_events e')
+            ->join('user_registration u', 'u.user_id = e.user_id')
+            ->group_by('u.user_id') // duplicate experts remove
+            ->get()
+            ->result();
+        $data['requests'] = $this->db->select('cmr.*, ur.first_name as customer_name')->from('customer_meeting_requests cmr')->join('user_registration ur', 'ur.user_id = cmr.expert_id')->where('cmr.expert_id', $user_id)->order_by('cmr.id', 'DESC')->get()->result();
+        // print_r($data['requests']);
+        // exit;
+        $data['payments'] = $this->db
+        ->select('*')
+        ->from('payment_paypal p')
+        ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
+        ->order_by('p.id', 'DESC')
+        ->get()
+        ->result(); 
+        // pr($data['payments']);exit;
+        _frontLayout('web-mgmt/googlemeet', $data);
+    }
+    public function payments()
+    {
+        if (!$this->session->userdata('auth_affiliate')) {
+            redirect(ci_site_url() . 'login');
+            exit();
+        }
+        $user_id = $_SESSION['user_id'];
+        $data['user'] = $this->front_model->get_user_by_id($user_id);
+        $data['orders_count'] = $this->db->select('*')->from('eshop_orders')->where('user_id', $user_id)->order_by('id', 'desc')->get()->num_rows();
+        $paymentinfo=$this->db->select_sum('amount')->from('payment_paypal')->where('user_id', $user_id)->get()->row();
+        $data['totalpayment'] = $paymentinfo->amount;
+        $paymentinfo=$this->db->select('*')->from('user_calls')->where('user_id', $user_id)->get()->row();
+        $data['totalcalls'] = $paymentinfo->total_calls;
+        $data['usedcalls'] = $paymentinfo->used_calls;
+        $data['products'] = $this->db->select('*')->from('eshop_products')->order_by('id', 'desc')->get()->result();
+        $data['latesorders'] = $this->db
+            ->select('*')
+            ->from('eshop_orders')
+            ->where(['user_id' => $user_id, 'DATE(order_date)' => date('Y-m-d')])
+            ->order_by('id', 'desc')
+            ->get()
+            ->result();
+        $data['customer_count'] = $this->db->from('user_registration')->where('member_type', 2)->count_all_results();
+        $data['expert_count'] = $this->db->from('user_registration')->where('member_type', 1)->count_all_results();
+        $date['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
+        $data['experts'] = $this->db
+            ->select('*')
+            ->from('user_registration')
+            ->where('member_type', 1) // expert
+            ->get()
+            ->result();
+        $data['expert_list'] = $this->db
+            ->select('u.user_id, u.first_name, u.last_name, u.username, u.email')
+            ->from('expert_events e')
+            ->join('user_registration u', 'u.user_id = e.user_id')
+            ->group_by('u.user_id') // duplicate experts remove
+            ->get()
+            ->result();
+        $data['requests'] = $this->db->select('cmr.*, ur.first_name as customer_name')->from('customer_meeting_requests cmr')->join('user_registration ur', 'ur.user_id = cmr.expert_id')->where('cmr.expert_id', $user_id)->order_by('cmr.id', 'DESC')->get()->result();
+        // print_r($data['requests']);
+        // exit;
+        $data['payments'] = $this->db
+        ->select('*')
+        ->from('payment_paypal p')
+        ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
+        ->order_by('p.id', 'DESC')
+        ->get()
+        ->result(); 
+        // pr($data['payments']);exit;
+        _frontLayout('web-mgmt/payment', $data);
+    }
+    public function expertbooking()
+    {
+        if (!$this->session->userdata('auth_affiliate')) {
+            redirect(ci_site_url() . 'login');
+            exit();
+        }
+        $user_id = $_SESSION['user_id'];
+        $data['user'] = $this->front_model->get_user_by_id($user_id);
+        $data['orders'] = $this->db->select('*')->from('eshop_orders')->where('user_id', $user_id)->order_by('id', 'desc')->get()->result();
+        $data['products'] = $this->db->select('*')->from('eshop_products')->order_by('id', 'desc')->get()->result();
+        $data['latesorders'] = $this->db
+            ->select('*')
+            ->from('eshop_orders')
+            ->where(['user_id' => $user_id, 'DATE(order_date)' => date('Y-m-d')])
+            ->order_by('id', 'desc')
+            ->get()
+            ->result();
+        $data['customer_count'] = $this->db->from('user_registration')->where('member_type', 2)->count_all_results();
+        $data['expert_count'] = $this->db->from('user_registration')->where('member_type', 1)->count_all_results();
+        $date['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
+        $data['experts'] = $this->db
+            ->select('*')
+            ->from('user_registration')
+            ->where('member_type', 1) // expert
+            ->get()
+            ->result();
+        $data['expert_list'] = $this->db
+            ->select('u.user_id, u.first_name, u.last_name, u.username, u.email')
+            ->from('expert_events e')
+            ->join('user_registration u', 'u.user_id = e.user_id')
+            ->group_by('u.user_id') // duplicate experts remove
+            ->get()
+            ->result();
+        $data['requests'] = $this->db->select('cmr.*, ur.first_name as customer_name')->from('customer_meeting_requests cmr')->join('user_registration ur', 'ur.user_id = cmr.expert_id')->where('cmr.expert_id', $user_id)->order_by('cmr.id', 'DESC')->get()->result();
+        // print_r($data['requests']);
+        // exit;
+        $data['payments'] = $this->db
+        ->select('*')
+        ->from('payment_paypal p')
+        ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
+        ->order_by('p.id', 'DESC')
+        ->get()
+        ->result(); 
+        // pr($data['payments']);exit;
+        _frontLayout('web-mgmt/expertbooking', $data);
+    }
+    public function orders()
+    {
+        if (!$this->session->userdata('auth_affiliate')) {
+            redirect(ci_site_url() . 'login');
+            exit();
+        }
+        $user_id = $_SESSION['user_id'];
+        $data['user'] = $this->front_model->get_user_by_id($user_id);
+        $data['orders'] = $this->db->select('*')->from('eshop_orders')->where('user_id', $user_id)->order_by('id', 'desc')->get()->result();
+        $data['products'] = $this->db->select('*')->from('eshop_products')->order_by('id', 'desc')->get()->result();
+        $data['latesorders'] = $this->db
+            ->select('*')
+            ->from('eshop_orders')
+            ->where(['user_id' => $user_id, 'DATE(order_date)' => date('Y-m-d')])
+            ->order_by('id', 'desc')
+            ->get()
+            ->result();
+        $data['customer_count'] = $this->db->from('user_registration')->where('member_type', 2)->count_all_results();
+        $data['expert_count'] = $this->db->from('user_registration')->where('member_type', 1)->count_all_results();
+        $date['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
+        $data['experts'] = $this->db
+            ->select('*')
+            ->from('user_registration')
+            ->where('member_type', 1) // expert
+            ->get()
+            ->result();
+        $data['expert_list'] = $this->db
+            ->select('u.user_id, u.first_name, u.last_name, u.username, u.email')
+            ->from('expert_events e')
+            ->join('user_registration u', 'u.user_id = e.user_id')
+            ->group_by('u.user_id') // duplicate experts remove
+            ->get()
+            ->result();
+        $data['requests'] = $this->db->select('cmr.*, ur.first_name as customer_name')->from('customer_meeting_requests cmr')->join('user_registration ur', 'ur.user_id = cmr.expert_id')->where('cmr.expert_id', $user_id)->order_by('cmr.id', 'DESC')->get()->result();
+        // print_r($data['requests']);
+        // exit;
+        $data['payments'] = $this->db
+        ->select('*')
+        ->from('payment_paypal p')
+        ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
+        ->order_by('p.id', 'DESC')
+        ->get()
+        ->result(); 
+        // pr($data['payments']);exit;
+
+        _frontLayout('web-mgmt/orders', $data);
+    }
+    public function sessions()
+    {
+        if (!$this->session->userdata('auth_affiliate')) {
+            redirect(ci_site_url() . 'login');
+            exit();
+        }
+        $user_id = $_SESSION['user_id'];
+        $data['user'] = $this->front_model->get_user_by_id($user_id);
+        $data['calls'] = $this->db->select('*')->from('customer_meeting_requests')->where('customer_id', $user_id)->order_by('id', 'desc')->get()->result();
+        $data['products'] = $this->db->select('*')->from('eshop_products')->order_by('id', 'desc')->get()->result();
+        $data['latesorders'] = $this->db
+            ->select('*')
+            ->from('eshop_orders')
+            ->where(['user_id' => $user_id, 'DATE(order_date)' => date('Y-m-d')])
+            ->order_by('id', 'desc')
+            ->get()
+            ->result();
+        $data['customer_count'] = $this->db->from('user_registration')->where('member_type', 2)->count_all_results();
+        $data['expert_count'] = $this->db->from('user_registration')->where('member_type', 1)->count_all_results();
+        $date['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
+        $data['experts'] = $this->db
+            ->select('*')
+            ->from('user_registration')
+            ->where('member_type', 1) // expert
+            ->get()
+            ->result();
+        $data['expert_list'] = $this->db
+            ->select('u.user_id, u.first_name, u.last_name, u.username, u.email')
+            ->from('expert_events e')
+            ->join('user_registration u', 'u.user_id = e.user_id')
+            ->group_by('u.user_id') // duplicate experts remove
+            ->get()
+            ->result();
+        $data['requests'] = $this->db->select('cmr.*, ur.first_name as customer_name')->from('customer_meeting_requests cmr')->join('user_registration ur', 'ur.user_id = cmr.expert_id')->where('cmr.expert_id', $user_id)->order_by('cmr.id', 'DESC')->get()->result();
+        // print_r($data['requests']);
+        // exit;
+        $data['payments'] = $this->db
+        ->select('*')
+        ->from('payment_paypal p')
+        ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
+        ->order_by('p.id', 'DESC')
+        ->get()
+        ->result(); 
+        // pr($data['payments']);exit;
+
+        _frontLayout('web-mgmt/sessions', $data);
+    }
+    public function experts()
+    {
+        if (!$this->session->userdata('auth_affiliate')) {
+            redirect(ci_site_url() . 'login');
+            exit();
+        }
+        $user_id = $_SESSION['user_id'];
+        $data['user'] = $this->front_model->get_user_by_id($user_id);
+        $data['calls'] = $this->db->select('*')->from('customer_meeting_requests')->where('customer_id', $user_id)->order_by('id', 'desc')->get()->result();
+        $data['products'] = $this->db->select('*')->from('eshop_products')->order_by('id', 'desc')->get()->result();
+        $data['latesorders'] = $this->db
+            ->select('*')
+            ->from('eshop_orders')
+            ->where(['user_id' => $user_id, 'DATE(order_date)' => date('Y-m-d')])
+            ->order_by('id', 'desc')
+            ->get()
+            ->result();
+        $data['customer_count'] = $this->db->from('user_registration')->where('member_type', 2)->count_all_results();
+        $data['expert_count'] = $this->db->from('user_registration')->where('member_type', 1)->count_all_results();
+        $date['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
+        $data['experts'] = $this->db
+            ->select('*')
+            ->from('user_registration')
+            ->where('member_type', 1) // expert
+            ->get()
+            ->result();
+        $data['expert_list'] = $this->db
+            ->select('u.user_id, u.first_name, u.last_name, u.username, u.email')
+            ->from('expert_events e')
+            ->join('user_registration u', 'u.user_id = e.user_id')
+            ->group_by('u.user_id') // duplicate experts remove
+            ->get()
+            ->result();
+        $data['requests'] = $this->db->select('cmr.*, ur.first_name as customer_name')->from('customer_meeting_requests cmr')->join('user_registration ur', 'ur.user_id = cmr.expert_id')->where('cmr.expert_id', $user_id)->order_by('cmr.id', 'DESC')->get()->result();
+        // print_r($data['requests']);
+        // exit;
+        $data['payments'] = $this->db
+        ->select('*')
+        ->from('payment_paypal p')
+        ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
+        ->order_by('p.id', 'DESC')
+        ->get()
+        ->result(); 
+        // pr($data['payments']);exit;
+
+        _frontLayout('web-mgmt/experts', $data);
+    }
+    public function addmoney()
+    {
+        if (!$this->session->userdata('auth_affiliate')) {
+            redirect(ci_site_url() . 'login');
+            exit();
+        }
+        $user_id = $_SESSION['user_id'];
+        $data['user'] = $this->front_model->get_user_by_id($user_id);
+        $data['calls'] = $this->db->select('*')->from('customer_meeting_requests')->where('customer_id', $user_id)->order_by('id', 'desc')->get()->result();
+        $data['products'] = $this->db->select('*')->from('eshop_products')->order_by('id', 'desc')->get()->result();
+        $data['latesorders'] = $this->db
+            ->select('*')
+            ->from('eshop_orders')
+            ->where(['user_id' => $user_id, 'DATE(order_date)' => date('Y-m-d')])
+            ->order_by('id', 'desc')
+            ->get()
+            ->result();
+        $data['customer_count'] = $this->db->from('user_registration')->where('member_type', 2)->count_all_results();
+        $data['expert_count'] = $this->db->from('user_registration')->where('member_type', 1)->count_all_results();
+        $date['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
+        $date['wallet'] = $this->db->select('*')->from('final_e_wallet')->where('user_id', $user_id)->get()->row();
+        $data['experts'] = $this->db
+            ->select('*')
+            ->from('user_registration')
+            ->where('member_type', 1) // expert
+            ->get()
+            ->result();
+        $data['expert_list'] = $this->db
+            ->select('u.user_id, u.first_name, u.last_name, u.username, u.email')
+            ->from('expert_events e')
+            ->join('user_registration u', 'u.user_id = e.user_id')
+            ->group_by('u.user_id') // duplicate experts remove
+            ->get()
+            ->result();
+        $data['requests'] = $this->db->select('cmr.*, ur.first_name as customer_name')->from('customer_meeting_requests cmr')->join('user_registration ur', 'ur.user_id = cmr.expert_id')->where('cmr.expert_id', $user_id)->order_by('cmr.id', 'DESC')->get()->result();
+        // print_r($data['requests']);
+        // exit;
+        $data['payments'] = $this->db
+        ->select('*')
+        ->from('payment_paypal p')
+        ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
+        ->order_by('p.id', 'DESC')
+        ->get()
+        ->result(); 
+        // pr($data['payments']);exit;
+
+        _frontLayout('web-mgmt/addmoney', $data);
+    }
+    public function profile()
+    {
+        if (!$this->session->userdata('auth_affiliate')) {
+            redirect(ci_site_url() . 'login');
+            exit();
+        }
+        $user_id = $_SESSION['user_id'];
+        $data['user'] = $this->front_model->get_user_by_id($user_id);
+        $data['orders'] = $this->db->select('*')->from('eshop_orders')->where('user_id', $user_id)->order_by('id', 'desc')->get()->result();
+        $data['products'] = $this->db->select('*')->from('eshop_products')->order_by('id', 'desc')->get()->result();
+        $data['latesorders'] = $this->db
+            ->select('*')
+            ->from('eshop_orders')
+            ->where(['user_id' => $user_id, 'DATE(order_date)' => date('Y-m-d')])
+            ->order_by('id', 'desc')
+            ->get()
+            ->result();
+        $data['customer_count'] = $this->db->from('user_registration')->where('member_type', 2)->count_all_results();
+        $data['expert_count'] = $this->db->from('user_registration')->where('member_type', 1)->count_all_results();
+        $date['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
+        $data['experts'] = $this->db
+            ->select('*')
+            ->from('user_registration')
+            ->where('member_type', 1) // expert
+            ->get()
+            ->result();
+        $data['expert_list'] = $this->db
+            ->select('u.user_id, u.first_name, u.last_name, u.username, u.email')
+            ->from('expert_events e')
+            ->join('user_registration u', 'u.user_id = e.user_id')
+            ->group_by('u.user_id') // duplicate experts remove
+            ->get()
+            ->result();
+        $data['requests'] = $this->db->select('cmr.*, ur.first_name as customer_name')->from('customer_meeting_requests cmr')->join('user_registration ur', 'ur.user_id = cmr.expert_id')->where('cmr.expert_id', $user_id)->order_by('cmr.id', 'DESC')->get()->result();
+        // print_r($data['requests']);
+        // exit;
+        $data['payments'] = $this->db
+        ->select('*')
+        ->from('payment_paypal p')
+        ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
+        ->order_by('p.id', 'DESC')
+        ->get()
+        ->result(); 
+        // pr($data['payments']);exit;
+
+        _frontLayout('web-mgmt/profile', $data);
     }
     public function invoice()
     {
@@ -1950,7 +2447,7 @@ class Web extends Common_Controller
             }
         }
         if (!empty($this->input->post('login'))) {
-            // pr($_POST);exit;
+             //pr($_POST);exit;
             //$this->session->set_userdata($data);
             /////sponsor and account informtaion
             $stockist = $this->input->post('stockist');
@@ -1960,6 +2457,7 @@ class Web extends Common_Controller
             $pkg_id = !empty($this->input->post('package')) ? $this->input->post('package') : 1;
 
             $email = $this->input->post('email');
+            $username=$email;
             $password = $this->input->post('password');
             $t_code = $this->input->post('tpassword');
             /*$ref_leg_position=$this->input->post("ref_leg_position");
@@ -3400,6 +3898,17 @@ class Web extends Common_Controller
         if ($client->isAccessTokenExpired()) {
             unset($_SESSION['access_token']);
             $_SESSION['request_id'] = $request_id;
+            // 
+            $user_id=$request->customer_id;
+            $callusercount=$this->db->select('*')->from('user_calls')->where('user_id',$user_id)->get()->num_rows();
+                    if($callusercount)
+                    {
+                        $calluser_info=$this->db->select('*')->from('user_calls')->where('user_id',$user_id)->get()->row();
+                        $callid=$calluser_info->id;
+                        $used_calls1=$calluser_info->used_calls-1;
+                        $remaining_calls1=$calluser_info->remaining_calls-1;
+                        $this->db->update('user_calls',array('used_calls'=>$used_calls1,'remaining_calls'=>$remaining_calls1),array('id'=>$callid));
+                    }
             redirect('webgooglemeet/index_google');
         }
 
@@ -3439,7 +3948,18 @@ class Web extends Common_Controller
             'meet_link' => $meet_link,
             'status' => 'approved',
         ]);
-
+        $user_id=$request->customer_id;
+        //echo $user_id; exit;
+            $callusercount=$this->db->select('*')->from('user_calls')->where('user_id',$user_id)->get()->num_rows();
+                    if($callusercount)
+                    {
+                        $calluser_info=$this->db->select('*')->from('user_calls')->where('user_id',$user_id)->get()->row();
+                        $callid=$calluser_info->id;
+                        $used_calls1=$calluser_info->used_calls+1;
+                        $remaining_calls1=$calluser_info->remaining_calls-1;
+                        $this->db->update('user_calls',array('used_calls'=>$used_calls1,'remaining_calls'=>$remaining_calls1),array('id'=>$callid));
+                    }
+        
         // 5️⃣ Email customer
         // $this->send_meet_email($request->customer_id, $meet_link);
 
