@@ -37,6 +37,35 @@ class MessagePanel extends Common_Controller
         }
         return $random_number;
 	}//end function
+
+	/**
+	 * Return current admin username/name safely even if COMP_USERNAME constant is not defined.
+	 */
+	private function getCompUsernameSafe()
+	{
+		if (defined('COMP_USERNAME') && !empty(COMP_USERNAME)) {
+			return COMP_USERNAME;
+		}
+
+		// try session (common in CI apps)
+		$sessionUsername = $this->session->userdata('username');
+		if (!empty($sessionUsername)) {
+			return $sessionUsername;
+		}
+
+		// fallback: fetch from DB if possible
+		try {
+			$row = $this->db->select('username')->from('users')->where('user_id', COMP_USER_ID)->get()->row();
+			if (!empty($row) && !empty($row->username)) {
+				return $row->username;
+			}
+		} catch (Throwable $e) {
+			// ignore and fallback
+		}
+
+		return (defined('COMP_USER_ID') ? (string)COMP_USER_ID : '');
+	}
+
 	public function composeMessage()
 	{
 		if(!empty($this->input->post("btn")))
@@ -53,6 +82,7 @@ class MessagePanel extends Common_Controller
 			    $attachment=adImageUpload($_FILES['attachment'],1, $image_upload_path);
 			}
 			////////////////////////////////
+			$sender_name = $this->getCompUsernameSafe();
 			foreach($all_users as $user_id)
 			{
 				$compose_to[]=array(
@@ -63,7 +93,7 @@ class MessagePanel extends Common_Controller
 					'reciever_id'=>$user_id,
 					'sender_id'=>COMP_USER_ID,
 					'reciever_name'=>get_user_name($user_id),
-					'sender_name'=>COMP_USERNAME,
+					'sender_name'=>$sender_name,
 					'attachment'=>$attachment
 					);
 			}
@@ -74,7 +104,7 @@ class MessagePanel extends Common_Controller
 					'subject'=>$subject,
 					'message'=>$message,
 					'sender_id'=>COMP_USER_ID,
-					'sender_name'=>COMP_USERNAME,
+					'sender_name'=>$sender_name,
 					'attachment'=>$attachment
 					));
 			$this->session->set_flashdata("flash_msg", '<span class="text-semibold">Well done!</span> Message is sent successfully');
@@ -83,6 +113,8 @@ class MessagePanel extends Common_Controller
 		}
 		$data=array();
 		$data['all_active_members']=$this->member_model->getAllActiveMembers();
+				// print_r($data['all_active_members']); exit;
+
 		_adminLayout("message-panel/compose-message",$data);
 	}//end method
 	public function sentMessage()

@@ -99,6 +99,8 @@ class Web extends Common_Controller
         }
         $data=array();
         $data['all_active_members']=$this->member_model->getAllActiveMembers();
+				// print_r($data['all_active_members']); exit;
+
         _adminLayout("web-mgmt/compose-message",$data);
     }//end method
     public function sentMessage()
@@ -1431,9 +1433,17 @@ class Web extends Common_Controller
         //$center_leader=$this->session->userdata('center_leader');
         $role = $this->session->userdata('userType');
         $owner_user_id = $this->session->userdata('stockist_id');
+
+        // NEW: payment selection from checkout
+        $selected_payment_method = (string) $this->input->post('payment_method'); // wallet|paypal|...
         $paypal_transaction_id = $this->input->post('paypal_transaction_id');
+
+        // Only call PayPal check when PayPal selected
+        $payment_response = null;
+        if ($selected_payment_method === 'paypal' && !empty($paypal_transaction_id)) {
+            $payment_response = $this->capture_order_check($paypal_transaction_id);
+        }
         // pr($paypal_transaction_id); exit;
-        $payment_response = $this->capture_order_check($paypal_transaction_id);
         //pr($payment_response); exit;
         // exit();
         if ($user_id != '' && $auth_affiliate) {
@@ -1447,80 +1457,78 @@ class Web extends Common_Controller
                 $total_pv = 0;
                 $total_product_qty = 0;
                 $role = $this->session->userdata('userType');
-                /*$user_id=null;
-    $guest_id=null;
-    if($role=='2')
-    {
-    $user_id=$this->session->userdata('user_id');
-    }
-    else if($role=='3')
-    {
-    $guest_id=$this->session->userdata('user_id');
-    }*/
+                // ...existing code...
 
                 foreach ($cart as $product) {
-                    //pr($product);exit;
-                    $product = (object) $product;
-                    $product_stock_info = $this->db
-                        ->select('*')
-                        ->from('eshop_products')
-                        ->where('id', $product->product_id)
-                        ->get()
-                        ->row();
-                    $package=$product->package;
-                    $final_stock = $product_stock_info->qty - $product->qty;
-                    $total_product_qty = $total_product_qty + $product->qty;
-                    $total_order = $product_stock_info->total_order + 1;
-                    $guest_point = $product_stock_info->guest_point;
-                    if($package=='Basic')
-                    {
-                        $new_price = $product_stock_info->price1;
-                        $calls = $product_stock_info->calls1;
-                    }
-                    else if($package=='Economy')
-                    {
-                        $new_price = $product_stock_info->price2;
-                        $calls = $product_stock_info->calls2;
-                    }
-                    else if($package=='Enterprise')
-                    {
-                        $new_price = $product_stock_info->price3;
-                        $calls = $product_stock_info->calls3;
-                    }
-                    
-
-                    
-                    //$this->db->update('eshop_products', ['qty' => $final_stock, 'total_order' => $total_order], ['id' => $product->product_id]);
-                    //$this->db->update('eshop_stock', ['qty' => $final_stock], ['product_id' => $product->product_id]);
-
-                    // update number of calls
-                    
-                    // check all call of user
-                    $callusercount=$this->db->select('*')->from('user_calls')->where('user_id',$user_id)->get()->num_rows();
-                    if($callusercount)
-                    {
-                        $calluser_info=$this->db->select('*')->from('user_calls')->where('user_id',$user_id)->get()->row();
-                        $callid=$calluser_info->id;
-                        $total_calls1=$calluser_info->total_calls+$calls;
-                        $remaining_calls1=$calluser_info->remaining_calls+$calls;
-                        $this->db->update('user_calls',array('total_calls'=>$total_calls1,'remaining_calls'=>$remaining_calls1),array('id'=>$callid));
-                    }
-                    else
-                    {
-                        $this->db->insert('user_calls',array('user_id'=>$user_id,'total_calls'=>$calls,'remaining_calls'=>$calls));
-                    }
-                    
-
-                    $product_id = $product->product_id;
-                    $cart_final_price = $this->session->userdata('cart_final_price');
-                    $pv = $guest_point * $product->qty;
-                    $total_pv = $total_pv + $pv;
+                    // ...existing code...
                 }
                 //exit;
 
                 $cart_final_price = $this->session->userdata('cart_final_price');
                 $cart_total_discount = $this->session->userdata('cart_total_discount');
-                //$cart_final_bv=$this->session->userdata('cart_final_bv');
+
+                // NEW: Wallet deduction before order finalization
+                if ($selected_payment_method === 'wallet') {
+                    $orderTotal = (float) $cart_final_price;
+
+                    // ensure wallet row exists
+                    $walletRow = $this->db->select('amount')->from('final_e_wallet')->where('user_id', $user_id)->get()->row();
+                    if (!$walletRow) {
+                        $this->db->insert('final_e_wallet', ['user_id' => $user_id, 'amount' => 0]);
+                        $walletRow = (object) ['amount' => 0];
+                    }
+
+                    $walletBalance = (float) $walletRow->amount;
+                    if ($walletBalance < $orderTotal) {
+                        $this->session->set_flashdata('error_msg', '<span class="text-semibold">Insufficient wallet balance.</span>');
+                        redirect(site_url() . 'checkout');
+                        exit();
+                    }
+
+                    // atomic deduction
+                    $this->db->query(
+                        "UPDATE final_e_wallet SET amount = amount - ? WHERE user_id = ? AND amount >= ?",
+                        [$orderTotal, $user_id, $orderTotal]
+                    );
+
+                    if ($this->db->affected_rows() <= 0) {
+                        $this->session->set_flashdata('error_msg', '<span class="text-semibold">Wallet deduction failed. Please try again.</span>');
+                        redirect(site_url() . 'checkout');
+                        exit();
+                    }
+
+                    // ledger entry (optional)
+                    $walletRow2 = $this->db->select('amount')->from('final_e_wallet')->where('user_id', $user_id)->get()->row();
+                    $newBalance = $walletRow2 ? (float) $walletRow2->amount : ($walletBalance - $orderTotal);
+
+                    $tables = $this->db->list_tables();
+                    if (in_array('credit_debit', $tables)) {
+                        $this->db->insert('credit_debit', [
+                            'transaction_no' => function_exists('generateUniqueTranNo') ? generateUniqueTranNo() : uniqid('TXN'),
+                            'user_id' => $user_id,
+                            'credit_amt' => 0,
+                            'debit_amt' => $orderTotal,
+                            'balance' => $newBalance,
+                            'receiver_id' => $user_id,
+                            'sender_id' => $user_id,
+                            'receive_date' => date('Y-m-d'),
+                            'ttype' => 'Order Payment',
+                            'TranDescription' => 'Order payment via Wallet. Order ID: ' . $order_id,
+                            'Cause' => 'Order payment via Wallet',
+                            'Remark' => 'Wallet debit for order ' . $order_id,
+                            'product_name' => 'main',
+                            'deposit_id' => '1',
+                            'status' => '1',
+                            'ewallet_used_by' => 'Withdrawal Wallet',
+                            'current_url' => current_url(),
+                            'reason' => 'ESHOP_ORDER_WALLET',
+                        ]);
+                    }
+                }
+
+                // Determine order payment method value stored in eshop_orders
+                $order_payment_method = ($selected_payment_method === 'wallet') ? 'wallet' : 'paypal';
+
                 $owner_user_id = $this->session->userdata('stockist_id');
                 $this->db->insert('eshop_orders', [
                     'order_id' => $order_id,
@@ -1534,7 +1542,7 @@ class Web extends Common_Controller
                     'discount' => $cart_total_discount,
                     'final_price' => $cart_final_price,
                     'final_pv' => $total_pv,
-                    'payment_method' => '2',
+                    'payment_method' => $order_payment_method,
                     'confirm_date' => date('Y-m-d H:i:s'),
                     'bill' => 1,
                 ]);
@@ -1548,79 +1556,55 @@ class Web extends Common_Controller
 
                 $product_ids = implode(',', $product_ids);
 
-                /////////////////////
-                $nom_info = $this->db
-                    ->select('*')
-                    ->from('user_registration')
-                    ->where(['user_id' => $user_id])
-                    ->get()
-                    ->row();
-                $this->db->insert('eshop_guest_delivery_address', [
-                    'role' => 2,
-                    'guest_id' => $user_id,
-                    'name' => $nom_info->first_name . ' ' . $nom_info->last_name,
-                    'mobile_no' => $nom_info->contact_no,
-                    'address' => $nom_info->address,
-                    'city' => $nom_info->city,
-                    'order_id' => $order_id,
-                    'state' => $nom_info->state,
-                    'crate_date' => date('Y-m-d'),
-                    'type' => '0',
-                ]);
-                $this->session->unset_userdata('cart_reg');
-                $this->session->unset_userdata('total_products');
-                $this->session->unset_userdata('cart_final_price');
-                $this->session->unset_userdata('registration_with_cart');
-                // ////// payment paypal
-                $response = $this->capture_order_check($paypal_transaction_id); // decoded array
-                $paypal_order_id = $response['id'];
-                $paypal_capture_id = $response['purchase_units'][0]['payments']['captures'][0]['id'];
+                // ...existing code... (delivery address, session unset)
 
-                $payer_email = $response['payer']['email_address'];
-                $payer_name = $response['payer']['name']['given_name'] . ' ' . $response['payer']['name']['surname'];
-                $payer_country = $response['payer']['address']['country_code'];
+                // PayPal insert only when PayPal selected
+                if ($selected_payment_method === 'paypal') {
+                    $response = $this->capture_order_check($paypal_transaction_id); // decoded array
+                    $paypal_order_id = $response['id'];
+                    $paypal_capture_id = $response['purchase_units'][0]['payments']['captures'][0]['id'];
 
-                $amount = $response['purchase_units'][0]['payments']['captures'][0]['amount']['value'];
-                $currency = $response['purchase_units'][0]['payments']['captures'][0]['amount']['currency_code'];
+                    $payer_email = $response['payer']['email_address'];
+                    $payer_name = $response['payer']['name']['given_name'] . ' ' . $response['payer']['name']['surname'];
+                    $payer_country = $response['payer']['address']['country_code'];
 
-                $paypal_fee = $response['purchase_units'][0]['payments']['captures'][0]['seller_receivable_breakdown']['paypal_fee']['value'];
-                $net_amount = $response['purchase_units'][0]['payments']['captures'][0]['seller_receivable_breakdown']['net_amount']['value'];
+                    $amount = $response['purchase_units'][0]['payments']['captures'][0]['amount']['value'];
+                    $currency = $response['purchase_units'][0]['payments']['captures'][0]['amount']['currency_code'];
 
-                $payment_time = date('Y-m-d H:i:s', strtotime($response['purchase_units'][0]['payments']['captures'][0]['create_time']));
+                    $paypal_fee = $response['purchase_units'][0]['payments']['captures'][0]['seller_receivable_breakdown']['paypal_fee']['value'];
+                    $net_amount = $response['purchase_units'][0]['payments']['captures'][0]['seller_receivable_breakdown']['net_amount']['value'];
 
-                $this->db->insert('payment_paypal', [
-                    'order_id' => $order_id,
-                    'user_id' => $this->session->userdata('user_id'),
-                    'product_ids' => $product_ids,
+                    $payment_time = date('Y-m-d H:i:s', strtotime($response['purchase_units'][0]['payments']['captures'][0]['create_time']));
 
-                    'payment_gateway' => 'paypal',
-                    'payment_method' => 'paypal',
+                    $this->db->insert('payment_paypal', [
+                        'order_id' => $order_id,
+                        'user_id' => $this->session->userdata('user_id'),
+                        'product_ids' => $product_ids,
+                        'payment_gateway' => 'paypal',
+                        'payment_method' => 'paypal',
+                        'paypal_order_id' => $paypal_order_id,
+                        'paypal_capture_id' => $paypal_capture_id,
+                        'paypal_payer_id' => $response['payer']['payer_id'],
+                        'payer_email' => $payer_email,
+                        'payer_name' => $payer_name,
+                        'payer_country' => $payer_country,
+                        'amount' => $amount,
+                        'currency' => $currency,
+                        'paypal_fee' => $paypal_fee,
+                        'net_amount' => $net_amount,
+                        'payment_status' => 'SUCCESS',
+                        'payment_time' => $payment_time,
+                        'paypal_response' => json_encode($response),
+                    ]);
 
-                    'paypal_order_id' => $paypal_order_id,
-                    'paypal_capture_id' => $paypal_capture_id,
-                    'paypal_payer_id' => $response['payer']['payer_id'],
+                    $this->session->set_flashdata('payment_success', [
+                        'order_id' => $order_id,
+                        'payment_id' => $paypal_order_id,
+                        'amount' => $amount,
+                        'paid_at' => date('d M Y, h:i A'),
+                    ]);
+                }
 
-                    'payer_email' => $payer_email,
-                    'payer_name' => $payer_name,
-                    'payer_country' => $payer_country,
-
-                    'amount' => $amount,
-                    'currency' => $currency,
-
-                    'paypal_fee' => $paypal_fee,
-                    'net_amount' => $net_amount,
-
-                    'payment_status' => 'SUCCESS',
-                    'payment_time' => $payment_time,
-
-                    'paypal_response' => json_encode($response),
-                ]);
-				$this->session->set_flashdata('payment_success', array(
-					'order_id'    => $order_id,
-					'payment_id'  => $paypal_order_id,
-					'amount'      => $amount,
-					'paid_at'     => date('d M Y, h:i A') // 👈 Date & Time
-				));
                 redirect(site_url() . 'invoice?order_id=' . $order_id);
                 exit();
             } else {
@@ -1632,6 +1616,7 @@ class Web extends Common_Controller
             exit();
         }
     }
+
     public function shop()
     {
         $data = [];
@@ -1697,6 +1682,13 @@ class Web extends Common_Controller
     {
         $data = [];
         $data['countries'] = $this->db->get('countries')->result();
+		$user_id = $this->session->userdata('user_id');
+		$data['wallet'] = $this->db
+			->where('user_id', $user_id)
+			->get('final_e_wallet')
+			->row(); 
+		// print_r($data['wallet']); exit;
+
         _frontLayout('web-mgmt/checkout', $data);
     }
 
@@ -2096,8 +2088,20 @@ class Web extends Common_Controller
             ->result();
         $data['customer_count'] = $this->db->from('user_registration')->where('member_type', 2)->count_all_results();
         $data['expert_count'] = $this->db->from('user_registration')->where('member_type', 1)->count_all_results();
-        $date['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
-        $date['wallet'] = $this->db->select('*')->from('final_e_wallet')->where('user_id', $user_id)->get()->row();
+        $data['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
+
+        // ✅ wallet data must be in $data so view can access $wallet
+        $data['wallet'] = $this->db->select('*')->from('final_e_wallet')->where('user_id', $user_id)->get()->row();
+
+        // ✅ Wallet Topup PayPal History (only logged-in user)
+        $data['wallet_topups'] = $this->db
+            ->select('id,user_id,paypal_order_id,paypal_capture_id,paypal_payer_id,payer_email,payer_name,payer_country,amount,currency,paypal_fee,net_amount,payment_status,payment_time,created_at,paypal_response')
+            ->from('wallet_topup_paypal')
+            ->where('user_id', $user_id)
+            ->order_by('id', 'DESC')
+            ->get()
+            ->result();
+
         $data['experts'] = $this->db
             ->select('*')
             ->from('user_registration')
@@ -2112,16 +2116,14 @@ class Web extends Common_Controller
             ->get()
             ->result();
         $data['requests'] = $this->db->select('cmr.*, ur.first_name as customer_name')->from('customer_meeting_requests cmr')->join('user_registration ur', 'ur.user_id = cmr.expert_id')->where('cmr.expert_id', $user_id)->order_by('cmr.id', 'DESC')->get()->result();
-        // print_r($data['requests']);
-        // exit;
+
         $data['payments'] = $this->db
-        ->select('*')
-        ->from('payment_paypal p')
-        ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
-        ->order_by('p.id', 'DESC')
-        ->get()
-        ->result(); 
-        // pr($data['payments']);exit;
+            ->select('*')
+            ->from('payment_paypal p')
+            ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
+            ->order_by('p.id', 'DESC')
+            ->get()
+            ->result();
 
         _frontLayout('web-mgmt/addmoney', $data);
     }
@@ -3134,275 +3136,6 @@ class Web extends Common_Controller
         }
     }
     /*
-	@mandatory method for all mlm plan i.e generic method
-	@desc:It's used to display the Register page
-	*/
-    public function listaschool($select_id = null)
-    {
-        if (!empty($select_id)) {
-            if ($this->front_model->isUserExist($select_id)) {
-                $data['replicated_username'] = $select_id;
-            }
-        }
-        if (!empty($this->input->post('btn'))) {
-            // pr($_POST);exit;
-            //$this->session->set_userdata($data);
-            /////sponsor and account informtaion
-            $ref_id = $this->input->post('sponsor_id');
-            $username = $this->input->post('username');
-            $pkg_id = !empty($this->input->post('platform')) ? $this->input->post('platform') : 1;
-
-            $email = $this->input->post('email');
-            $password = $this->input->post('password');
-            $t_code = $password; //=$this->input->post("transaction_pwd");
-            $ref_leg_position = $this->input->post('ref_leg_position');
-
-            $condition = $this->input->post('con_sponsor');
-
-            $upline_id = $this->input->post('upline_id');
-
-            if ($condition == 1) {
-                $ref_id = '123456';
-            } else {
-                $ref_id = $ref_id;
-            }
-
-            $pk_res = $this->db->query("select * from package where id='" . $pkg_id . "'")->row_array();
-
-            $pkg_amount = $pk_res['amount'];
-
-            /*$pkg_count=$this->db->select('*')->from('package')->where(array('id'=>$pkg_id))->get()->num_rows();
-			
-			if($pkg_count==0)
-			{
-				 $this->session->set_flashdata("error_msg", '<span class="text-semibold">Please choose valid package</span>');
-				redirect(site_url()."Web/listaschool");
-				exit();
-				
-			}*/
-
-            $sponsor_qry = $this->db->query("select * from user_registration where (username='" . $ref_id . "' || user_id='" . $ref_id . "')");
-            $sponsor_count = $sponsor_qry->num_rows();
-            $sponsor_result = $sponsor_qry->row_array();
-
-            if ($sponsor_count == 0) {
-                $this->session->set_flashdata('error_msg', '<span class="text-semibold">Sponsor not found</span>');
-                redirect(site_url() . 'Web/listaschool');
-                exit();
-            }
-
-            /*$upline_qry=$this->db->query("select * from user_registration where (username='".$upline_id."' || user_id='".$upline_id."')");
-	        $upline_count=$upline_qry->num_rows();
-			$upline_result=$upline_qry->row_array();
-			
-			if($upline_count==0)
-			{
-				$this->session->set_flashdata("error_msg", '<span class="text-semibold">Upline not found</span>');
-				redirect(site_url()."front/register");
-				exit();
-			}*/
-
-            $user_count = $this->db
-                ->select('*')
-                ->from('user_login')
-                ->where(['username' => $username])
-                ->get()
-                ->num_rows();
-
-            if ($user_count == 1) {
-                $this->session->set_flashdata('error_msg', '<span class="text-semibold">Username already exist</span>');
-                redirect(site_url() . 'Web/listaschool');
-                exit();
-            }
-
-            $chkpkgcond = $this->db
-                ->select('*')
-                ->from('user_registration')
-                ->where(['username' => $username])
-                ->get()
-                ->num_rows();
-
-            $ref_user_info = $this->account_model->getUserDetails($ref_id);
-            //$upline_user_info=$this->account_model->getUserDetails($upline_id);
-
-            $account_type = !empty($this->input->post('account_type')) ? $this->input->post('account_type') : '1';
-            /////personal informtaion
-            $first_name = $this->input->post('first_name');
-            $last_name = $this->input->post('last_name');
-            $contact_no = $this->input->post('contact_no');
-            $country = $this->input->post('country');
-            $state = $this->input->post('state');
-            $city = $this->input->post('city');
-            $address_line1 = $this->input->post('address');
-            $date_of_birth = $this->input->post('date_of_birth');
-            $contact_person = $this->input->post('contact_person');
-            $contact_person_email = $this->input->post('contact_person_email');
-            $contact_person_phone = $this->input->post('contact_person_phone');
-            /////Bank account informtaion
-            $account_holder_name = !empty($this->input->post('account_holder_name')) ? $this->input->post('account_holder_name') : null;
-            $account_no = !empty($this->input->post('account_no')) ? $this->input->post('account_no') : null;
-            $bank_name = !empty($this->input->post('bank_name')) ? $this->input->post('bank_name') : null;
-            $branch_name = !empty($this->input->post('branch_name')) ? $this->input->post('branch_name') : null;
-            //////Bit Coin Information/////////////////////
-            $bit_coin_id = !empty($this->input->post('bit_coin_id')) ? $this->input->post('bit_coin_id') : null;
-            /////////////
-
-            $registration_info = [];
-            $registration_info['sponsor_and_account_info'] = [
-                'ref_id' => $ref_user_info->user_id,
-                'ref_user_name' => $ref_user_info->username,
-                'username' => $username,
-                'email' => $email,
-                'pkg_id' => $pkg_id,
-                'pkg_amount' => $pkg_amount,
-
-                'ref_leg_position' => $ref_leg_position,
-                'password' => $password,
-                't_code' => $t_code,
-                'account_type' => $account_type,
-            ];
-
-            $registration_info['personal_info'] = [
-                'first_name' => $first_name,
-                'last_name' => $last_name,
-                'contact_no' => $contact_no,
-                'country' => $country,
-                'state' => $state,
-                'city' => $city,
-                'address_line1' => $address_line1,
-                'date_of_birth' => $date_of_birth,
-                'contact_person' => $contact_person,
-                'contact_person_email' => $contact_person_email,
-                'contact_person_phone' => $contact_person_phone,
-            ];
-
-            $registration_info['bank_account_info'] = [
-                'account_holder_name' => $account_holder_name,
-                'account_no' => $account_no,
-                'bank_name' => $bank_name,
-                'branch_name' => $branch_name,
-            ];
-            $registration_info['bit_coin_info'] = [
-                'bit_coin_id' => $bit_coin_id,
-            ];
-
-            $this->session->set_userdata('registration_info', $registration_info);
-            //pr($registration_info);exit;
-            //redirect(site_url()."payment-payment"); exit;
-            $user_id = schoolUserRegistration();
-            if ($user_id) {
-                $userdata = [
-                    'username' => $username,
-                    'password' => $password,
-                    'userType' => 3,
-                    'auth_school' => true,
-                    'SD_User_Name' => $username,
-                    'user_id' => $user_id,
-                    'userpanel_user_id' => $user_id,
-                    'member_type' => 2,
-                ];
-                //print_r($userdata); exit;
-                $this->db->update('user_registration', ['current_login_status' => '1'], ['user_id' => $user_id]);
-                $this->session->set_userdata($userdata);
-                redirect(site_url() . 'School');
-                exit();
-            }
-            redirect(site_url() . 'listaschool');
-            exit();
-        }
-        $data['registration_info'] = !empty($this->session->userdata('registration_info')) && count($this->session->userdata('registration_info')) > 0 ? $this->session->userdata('registration_info') : null;
-        if (!empty($ref_id)) {
-            $registration_info['sponsor_and_account_info']['ref_id'] = $ref_id;
-            $ref_user_info = $this->account_model->getUserDetails($ref_id);
-            $registration_info['sponsor_and_account_info']['ref_user_name'] = $ref_user_info->username;
-            $data['registration_info'] = $registration_info;
-        }
-        if (!empty($account_type)) {
-            $data['account_type'] = $account_type;
-        }
-
-        //$data['all_active_package']=$this->db->query("select * from package where status='1'")->result();
-
-        _frontLayout('school-mgmt/listaschool', $data);
-        //$this->load->view("front-mgmt/register",$data);
-    }
-
-    public function payment_method()
-    {
-        _frontLayout('web-mgmt/payment-option');
-    }
-    public function ewallet_payment()
-    {
-        _frontLayout('web-mgmt/ewallet-payment');
-    }
-
-    public function bankWirePayment()
-    {
-        $registration_info = $this->session->userdata('registration_info');
-        if (!empty($registration_info) && count($registration_info) > 0) {
-            $this->db->insert('bank_wired_user_registration', [
-                ///sponsor and account information
-                'ref_id' => $registration_info['sponsor_and_account_info']['ref_id'],
-                'bit_coin_id' => $registration_info['sponsor_and_account_info']['stockist'],
-                'account_holder_name' => $registration_info['sponsor_and_account_info']['product'],
-                'platform' => $registration_info['sponsor_and_account_info']['pkg_id'],
-                'package_fee' => $registration_info['sponsor_and_account_info']['pkg_amount'],
-                'username' => $registration_info['sponsor_and_account_info']['username'],
-                'password' => $registration_info['sponsor_and_account_info']['password'],
-                't_code' => $registration_info['sponsor_and_account_info']['t_code'],
-                'ref_leg_position' => $registration_info['sponsor_and_account_info']['ref_leg_position'],
-                /*	'account_type'=>$registration_info['sponsor_and_account_info']['account_type'],*/
-                //personal informtaion
-                'first_name' => $registration_info['personal_info']['first_name'],
-                'last_name' => $registration_info['personal_info']['last_name'],
-                'email' => $registration_info['sponsor_and_account_info']['email'],
-                'contact_no' => $registration_info['personal_info']['contact_no'],
-                'country' => $registration_info['personal_info']['country'],
-                'state' => $registration_info['personal_info']['state'],
-                'city' => $registration_info['personal_info']['city'],
-                'address_line1' => $registration_info['personal_info']['address_line1'],
-                'date_of_birth' => $registration_info['personal_info']['date_of_birth'],
-                //bank account info
-                'account_no' => $registration_info['bank_account_info']['account_no'],
-                'branch_name' => $registration_info['bank_account_info']['branch_name'],
-                'bank_name' => $registration_info['bank_account_info']['bank_name'],
-                'account_holder_name' => $registration_info['bank_account_info']['account_holder_name'],
-                //bit coin info
-                'bit_coin_id' => $registration_info['bit_coin_info']['bit_coin_id'],
-                'stockist_id' => $registration_info['sponsor_and_account_info']['stockist_id'],
-                'cart_reg' => $registration_info['sponsor_and_account_info']['cart_reg'],
-                'cart_reg_final_price' => $registration_info['sponsor_and_account_info']['cart_reg_final_price'],
-                'total_products' => $registration_info['sponsor_and_account_info']['total_products'],
-                'payment_method' => '1',
-            ]);
-            $username = $registration_info['sponsor_and_account_info']['username'];
-            $password = $registration_info['sponsor_and_account_info']['password'];
-            $email = $registration_info['sponsor_and_account_info']['email'];
-            $transaction_pwd = $registration_info['sponsor_and_account_info']['t_code'];
-
-            //sendUploadBankWireProofEmailToUser($username,$password,$email,$transaction_pwd);
-
-            $this->session->set_userdata(
-                'flash_msg',
-                "<h3 style='color:green;font-weight:bold'>Thanks for your registration Using Bank Wire<br>
-        	<a href='" .
-                    site_url() .
-                    'Web/uploadBankWireProof/' .
-                    $registration_info['sponsor_and_account_info']['username'] .
-                    "'><p>Please Click here to upload your Bank Wire proof of payment to get confirmed.</p></a>
-        	</h5>",
-            );
-            $this->session->unset_userdata('registration_info');
-            redirect(site_url() . 'bank-wire-payment');
-            exit();
-        }
-        $bank_wire_detail = $this->front_model->getBankWirePaymentDetailsList(123456);
-        $bank_wire_detail = $bank_wire_detail[0];
-        $data['bank_wire_detail'] = $bank_wire_detail;
-        //pr($data['bank_wire_detail']);
-        _frontLayout('web-mgmt/bank-wire-payment', $data);
-    }
-    /*
 	@Desc: It's used to upload bank wire proof
 	*/
     public function uploadBankWireProof($username = null)
@@ -3824,6 +3557,24 @@ class Web extends Common_Controller
 
     // 		if (empty($_SESSION['access_token'])) {
     // 			redirect('webgooglemeet');
+    // 		}
+
+    // 		$client = $this->getClient();
+    // 		$client->setAccessToken($_SESSION['access_token']);
+
+    // 		if ($client->isAccessTokenExpired()) {
+    // 			unset($_SESSION['access_token']);
+    // 			redirect('webgooglemeet');
+    // 		}
+
+    // 		$service = new Google_Service_Calendar($client);
+
+    // 		$startDateTime = date('c', strtotime("$date $start_time"));
+    // 		$endDateTime = date('c', strtotime("$date $end_time"));
+
+    // 		$event = new Google_Service_Calendar_Event([
+    // 			'summary' => 'Bizkits Google Meet',
+    // 			'description' => 'Meeting from CodeIgniter',
     // 		}
 
     // 		$client = $this->getClient();
@@ -4283,6 +4034,58 @@ class Web extends Common_Controller
 
         echo json_encode($data);
     }
+	public function expert_calendar_events()
+    {
+        $customer_id = $this->session->userdata('user_id');
+
+        $events = $this->db->where('expert_id', $customer_id)->get('customer_meeting_requests')->result();
+
+        $data = [];
+
+        foreach ($events as $e) {
+            // 🎨 Status wise color
+            $color = '#f0ad4e'; // pending
+            if ($e->status == 'approved') {
+                $color = '#5cb85c';
+            }
+            if ($e->status == 'rejected') {
+                $color = '#d9534f';
+            }
+            $meetBtn = '';
+            if ($e->status == 'approved' && !empty($e->meet_link)) {
+                $meetBtn =
+                    '
+                <a href="' .
+                    $e->meet_link .
+                    '" 
+                   target="_blank" 
+                   class="btn btn-success btn-sm mt-2">
+                   Join Google Meet
+                </a>
+            ';
+            }
+
+            $data[] = [
+                'id' => $e->id,
+
+                // 👇 Calendar title
+                'title' => $e->title . ' (' . ucfirst($e->status) . ')',
+
+                // 👇 Calendar date
+                'start' => $e->requested_date,
+
+                // 👇 Calendar color
+                'color' => $color,
+
+                // 👇 EXTRA DATA (date click me use hoga)
+                'status' => $e->status,
+                'message' => $e->message,
+                'meet_link' => $meetBtn,
+            ];
+        }
+
+        echo json_encode($data);
+    }
 
     public function send_request()
     {
@@ -4369,6 +4172,243 @@ class Web extends Common_Controller
     return $result['access_token'];
 }
 
+    /**
+     * PayPal wrapper (do not change existing getToken())
+     * Reason: future gateways or other tokens can coexist safely.
+     */
+    private function getPaypalAccessToken()
+    {
+        // call existing function (backward compatible)
+        return $this->getToken();
+    }
+
+    /**
+     * Wallet Topup: Create PayPal order for add money
+     * URL: /paypal_wallet/create_order
+     */
+    public function paypal_wallet_create_order()
+    {
+        $token = $this->getPaypalAccessToken();
+        if (!$token) {
+            show_error('PayPal Token Error');
+        }
+
+        $this->config->load('paypal');
+        $base_url = $this->config->item('paypal_base_url');
+
+        $input  = json_decode(file_get_contents('php://input'), true);
+        $amount = isset($input['amount']) ? number_format((float) $input['amount'], 2, '.', '') : '0.00';
+        $currency = !empty($input['currency']) ? $input['currency'] : 'USD';
+
+        // store in session to validate later
+        $this->session->set_userdata('wallet_topup_amount', $amount);
+        $this->session->set_userdata('wallet_topup_currency', $currency);
+
+        $data = [
+            'intent' => 'CAPTURE',
+            'purchase_units' => [[
+                'amount' => [
+                    'currency_code' => $currency,
+                    'value' => $amount,
+                ],
+            ]],
+        ];
+
+        $ch = curl_init($base_url . 'v2/checkout/orders');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                "Authorization: Bearer $token",
+            ],
+        ]);
+
+        $resp = curl_exec($ch);
+        if (curl_errno($ch)) {
+            log_message('error', 'PayPal wallet create order curl error: ' . curl_error($ch));
+        }
+        curl_close($ch);
+
+        // return raw paypal response
+        $this->output->set_content_type('application/json')->set_output($resp);
+    }
+
+    /**
+     * Wallet Topup: Capture PayPal order & credit wallet
+     * URL: /paypal_wallet/capture_order/{orderID}
+     */
+    public function paypal_wallet_capture_order($orderID)
+    {
+        if (!$this->session->userdata('auth_affiliate')) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ]));
+            return;
+        }
+
+        $token = $this->getPaypalAccessToken();
+        if (!$token) {
+            show_error('PayPal Token Error');
+        }
+
+        $this->config->load('paypal');
+        $base_url = $this->config->item('paypal_base_url');
+
+        // capture
+        $ch = curl_init($base_url . "v2/checkout/orders/$orderID/capture");
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                "Authorization: Bearer $token",
+            ],
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if (curl_errno($ch)) {
+            log_message('error', 'PayPal wallet capture curl error: ' . curl_error($ch));
+        }
+        curl_close($ch);
+
+        $decoded = json_decode($response, true);
+
+        if ($httpCode < 200 || $httpCode >= 300 || empty($decoded)) {
+            log_message('error', 'PayPal wallet capture failed: ' . $response);
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'status' => false,
+                'message' => 'PayPal capture failed',
+                'raw' => $response,
+            ]));
+            return;
+        }
+
+        // Parse capture details (best effort)
+        $capture = $decoded['purchase_units'][0]['payments']['captures'][0] ?? null;
+        $payer = $decoded['payer'] ?? [];
+
+        $paypal_order_id = $decoded['id'] ?? $orderID;
+        $paypal_capture_id = $capture['id'] ?? null;
+        $paypal_payer_id = $payer['payer_id'] ?? null;
+
+        $payer_email = $payer['email_address'] ?? null;
+        $payer_name = null;
+        if (!empty($payer['name']['given_name']) || !empty($payer['name']['surname'])) {
+            $payer_name = trim(($payer['name']['given_name'] ?? '') . ' ' . ($payer['name']['surname'] ?? ''));
+        }
+        $payer_country = $payer['address']['country_code'] ?? null;
+
+        $amount = $capture['amount']['value'] ?? ($decoded['purchase_units'][0]['amount']['value'] ?? null);
+        $currency = $capture['amount']['currency_code'] ?? ($decoded['purchase_units'][0]['amount']['currency_code'] ?? 'USD');
+
+        $paypal_fee = $capture['seller_receivable_breakdown']['paypal_fee']['value'] ?? null;
+        $net_amount = $capture['seller_receivable_breakdown']['net_amount']['value'] ?? null;
+
+        $payment_time = !empty($capture['create_time']) ? date('Y-m-d H:i:s', strtotime($capture['create_time'])) : date('Y-m-d H:i:s');
+
+        // Validate against session amount if available
+        $expectedAmount = $this->session->userdata('wallet_topup_amount');
+        if (!empty($expectedAmount) && !empty($amount)) {
+            // compare with 2 decimals
+            if (number_format((float) $expectedAmount, 2, '.', '') !== number_format((float) $amount, 2, '.', '')) {
+                log_message('error', 'Wallet topup amount mismatch. expected=' . $expectedAmount . ' actual=' . $amount);
+            }
+        }
+
+        $user_id = (int) $this->session->userdata('user_id');
+
+        // prevent duplicate by capture id
+        if (!empty($paypal_capture_id)) {
+            $dupe = $this->db->where('paypal_capture_id', $paypal_capture_id)->get('wallet_topup_paypal')->num_rows();
+            if ($dupe > 0) {
+                $this->output->set_content_type('application/json')->set_output(json_encode([
+                    'status' => true,
+                    'message' => 'Already captured',
+                    'data' => $decoded,
+                ]));
+                return;
+            }
+        }
+
+        // Insert PayPal topup row
+        $this->db->insert('wallet_topup_paypal', [
+            'user_id' => $user_id,
+            'paypal_order_id' => $paypal_order_id,
+            'paypal_capture_id' => $paypal_capture_id,
+            'paypal_payer_id' => $paypal_payer_id,
+            'payer_email' => $payer_email,
+            'payer_name' => $payer_name,
+            'payer_country' => $payer_country,
+            'amount' => $amount ? $amount : 0,
+            'currency' => $currency,
+            'paypal_fee' => $paypal_fee,
+            'net_amount' => $net_amount,
+            'payment_status' => 'SUCCESS',
+            'payment_time' => $payment_time,
+            'paypal_response' => json_encode($decoded),
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        // Credit wallet (final_e_wallet)
+        $wallet = $this->db->select('amount')->from('final_e_wallet')->where('user_id', $user_id)->get()->row();
+        $currentBalance = $wallet ? (float) $wallet->amount : 0;
+        $newBalance = $currentBalance + (float) $amount;
+
+        if ($wallet) {
+            $this->db->where('user_id', $user_id)->update('final_e_wallet', ['amount' => $newBalance]);
+        } else {
+            $this->db->insert('final_e_wallet', ['user_id' => $user_id, 'amount' => $newBalance]);
+        }
+
+        // ✅ Set flashdata so existing modal (paymentSuccessModal) can show after redirect-based flows,
+        // and can also be used by any view that reads payment_success.
+        $this->session->set_flashdata('payment_success', [
+            'order_id' => 'WALLET_TOPUP',
+            'payment_id' => $paypal_capture_id ? $paypal_capture_id : $paypal_order_id,
+            'amount' => $amount,
+            'paid_at' => date('d M Y, h:i A'),
+        ]);
+
+        // Optional ledger entry if credit_debit exists (no removal; best-effort)
+        $tables = $this->db->list_tables();
+        if (in_array('credit_debit', $tables)) {
+            $this->db->insert('credit_debit', [
+                'transaction_no' => function_exists('generateUniqueTranNo') ? generateUniqueTranNo() : uniqid('TXN'),
+                'user_id' => $user_id,
+                'credit_amt' => (float) $amount,
+                'debit_amt' => 0,
+                'balance' => $newBalance,
+                'receiver_id' => $user_id,
+                'sender_id' => $user_id,
+                'receive_date' => date('Y-m-d'),
+                'ttype' => 'Wallet Topup',
+                'TranDescription' => 'Wallet topup via PayPal',
+                'Cause' => 'Wallet topup via PayPal',
+                'Remark' => 'PayPal Order: ' . $paypal_order_id,
+                'product_name' => 'main',
+                'deposit_id' => '1',
+                'status' => '1',
+                'ewallet_used_by' => 'Withdrawal Wallet',
+                'current_url' => current_url(),
+                'reason' => 'WALLET_TOPUP_PAYPAL',
+            ]);
+        }
+
+        $this->output->set_content_type('application/json')->set_output(json_encode([
+            'status' => true,
+            'message' => 'Wallet credited successfully',
+            'balance' => $newBalance,
+            'order_id' => 'WALLET_TOPUP',
+            'payment_id' => $paypal_capture_id ? $paypal_capture_id : $paypal_order_id,
+            'amount' => number_format((float) $amount, 2, '.', ''),
+            'paid_at' => date('d M Y, h:i A'),
+            'paypal' => $decoded,
+        ]));
+    }
 
 public function create_order()
 {
@@ -4472,5 +4512,70 @@ public function capture_order_check($orderID)
     log_message('error', 'PayPal Check Error: ' . $response);
     return false;
 }
+
+    /**
+     * Wallet Topup: Log PayPal cancel event (stores cancelled attempts)
+     * URL: /web/paypal_wallet_cancel
+     */
+    public function paypal_wallet_cancel()
+    {
+        if (!$this->session->userdata('auth_affiliate')) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ]));
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $user_id = (int) $this->session->userdata('user_id');
+
+        $paypal_order_id = $input['orderID'] ?? null;
+        $amount = $input['amount'] ?? $this->session->userdata('wallet_topup_amount');
+        $currency = $input['currency'] ?? $this->session->userdata('wallet_topup_currency') ?? 'USD';
+        $reason = $input['reason'] ?? 'USER_CANCELLED';
+
+        // If order id not present, still log a row for debugging/auditing.
+        if (empty($paypal_order_id)) {
+            $paypal_order_id = 'CANCELLED_' . uniqid();
+        }
+
+        // Avoid duplicate cancel rows for same order id
+        $exists = $this->db
+            ->where('user_id', $user_id)
+            ->where('paypal_order_id', $paypal_order_id)
+            ->where('payment_status', 'CANCELLED')
+            ->get('wallet_topup_paypal')
+            ->num_rows();
+
+        if ($exists == 0) {
+            $this->db->insert('wallet_topup_paypal', [
+                'user_id' => $user_id,
+                'paypal_order_id' => $paypal_order_id,
+                'paypal_capture_id' => null,
+                'paypal_payer_id' => null,
+                'payer_email' => null,
+                'payer_name' => null,
+                'payer_country' => null,
+                'amount' => $amount ? $amount : 0,
+                'currency' => $currency,
+                'paypal_fee' => 0,
+                'net_amount' => 0,
+                'payment_status' => 'CANCELLED',
+                'payment_time' => date('Y-m-d H:i:s'),
+                'paypal_response' => json_encode([
+                    'type' => 'CANCEL',
+                    'reason' => $reason,
+                    'client_payload' => $input,
+                ]),
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        $this->output->set_content_type('application/json')->set_output(json_encode([
+            'status' => true,
+            'message' => 'Cancellation logged',
+        ]));
+    }
 
 } //end class

@@ -505,55 +505,19 @@ class Member_Model extends Common_Model
             );
             return  $json_data;
     }//end method 	
-  public function getAllActiveMembers()
-   {
-      $requestData = $_GET;
-		$sql=$this->db->select('u.id,u.username,u.user_id,u.ref_id,u.registration_date,u.active_status',false)
-			->from('user_registration as u');
-		if (!empty($requestData['search']['value'])) {
-                $ser = strtolower($requestData['search']['value']);
-                $sql->where("(LOWER(u.username) like '%$ser%'");
-                $sql->or_where("LOWER(u.user_id) like '%$ser%' ");
-                $sql->or_where("u.ref_id like '%$ser%' ");
-                $sql->or_where("u.registration_date like '%$ser%' )");
-             }
-             //$sql->order_by('u.id', 'desc'); 
-			$sql->where_in('u.active_status',array('1'));  
-			$sql1 = clone $sql;
-             if ($requestData['length'] != '-1') {  // for showing all records
-                $query = $sql->limit($requestData['length'], $requestData['start']);   
-             }
-            $query = $sql->get()->result();
-            
-			$totalData = $totalFiltered = $sql1->get()->num_rows();             
-            
-			$data = array();
-            
-			$sr_no = $requestData['start'];
-            foreach ($query as $row) 
-			{
-                $active_status_class=($row->active_status=='1')?'label-success':'label-danger';
-                $active_status_label=($row->active_status=='1')?'Active':'Inactive';
-				
-				$status=html_entity_decode('<span class="label '.$active_status_class.'">'.$active_status_label.'</span>');
-				$nestedData = array();
-                $nestedData[] = ++$sr_no;
-				$nestedData[] = ucwords($row->username);
-                $nestedData[] = ucwords($row->user_id);
-				$nestedData[] = date(date_formats(),strtotime($row->registration_date));
-				$nestedData[] = get_user_name($row->ref_id);
-				$nestedData[] = $row->ref_id;
-				$nestedData[] = $status;
-                $data[] = $nestedData;
-           }
-            $json_data = array(
-                "draw" => intval($requestData['draw']),
-                "recordsTotal" => intval($totalData),
-                "recordsFiltered" => intval($totalFiltered),
-                "data" => $data
-            );
-            return  $json_data;
-   }//end method
+	public function getAllActiveMembers()
+	{
+	 $userQuery=$this->db->select('*')->from('user_registration as u')
+	   
+	   ->group_by('u.username')
+	   ->order_by('id')
+	   ->where('u.member_type','1')
+	   ->get();
+	 $result=(!empty($userQuery->result()))?$userQuery->result():array();
+	 return $result;
+	}//end method
+ 
+
   public function getAllInActiveMembers()
    {
         $requestData = $_GET;

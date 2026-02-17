@@ -1,4 +1,4 @@
-		<!-- breadcrumbs-area-start -->
+<!-- breadcrumbs-area-start -->
 		<div class="breadcrumbs-area mb-70">
 		    <div class="container">
 		        <div class="row">
@@ -175,7 +175,7 @@ $ud=get_user_details($user_id);
 		                                <input type="hidden" name="billing_name" id="billing_name">
 
 		                                <div class="row">
-		                                    
+
 
 		                                    <div class="col-lg-6 col-md-6 col-12">
 		                                        <div class="checkout-form-list">
@@ -195,7 +195,8 @@ $ud=get_user_details($user_id);
 		                                    <div class="col-lg-6 col-md-12 col-12">
 		                                        <div class="checkout-form-list">
 		                                            <label>Company Name</label>
-		                                            <input type="text" id="bill_company" name="bill_company" placeholder="" value="<?php echo $ud->first_name;?>">
+		                                            <input type="text" id="bill_company" name="bill_company" placeholder=""
+		                                                value="<?php echo $ud->first_name;?>">
 		                                        </div>
 		                                    </div>
 
@@ -203,30 +204,33 @@ $ud=get_user_details($user_id);
 		                                        <div class="checkout-form-list">
 		                                            <label>Address <span class="required">*</span></label>
 		                                            <input type="text" id="bill_address1" name="bill_address1"
-		                                                data-required="true" placeholder="Street address" value="<?php echo $ud->address_line1;?>">
+		                                                data-required="true" placeholder="Street address"
+		                                                value="<?php echo $ud->address_line1;?>">
 		                                        </div>
 		                                    </div>
 
 		                                    <div class="col-lg-12 col-md-12 col-12">
 		                                        <div class="checkout-form-list">
 		                                            <input type="text" id="bill_address2" name="bill_address2"
-		                                                placeholder="Apartment, suite, unit etc. (optional)" value="<?php echo $ud->address_line2;?>">
+		                                                placeholder="Apartment, suite, unit etc. (optional)"
+		                                                value="<?php echo $ud->address_line2;?>">
 		                                        </div>
 		                                    </div>
 
 		                                    <div class="col-lg-6">
 		                                        <div class="country-select">
 		                                            <label>Country <span class="required">*</span></label>
-		                                            <select id="bill_country" name="bill_country" data-required="true" onchange="print_state('bill_state',this.selectedIndex);">
+		                                            <select id="bill_country" name="bill_country" data-required="true"
+		                                                onchange="print_state('bill_state',this.selectedIndex);">
 		                                                <option value="">-- select --</option>
-		                                                
+
 		                                            </select>
 		                                        </div>
 		                                    </div>
 		                                    <div class="col-lg-6 col-md-12 col-12">
 		                                        <div class="country-select">
 		                                            <label>State <span class="required">*</span></label>
-		                                            <select id="bill_state" name="bill_state" >
+		                                            <select id="bill_state" name="bill_state">
 		                                                <option value="">--select--</option>
 		                                            </select>
 		                                        </div>
@@ -243,7 +247,7 @@ $ud=get_user_details($user_id);
 		                                    <div class="col-lg-6 col-md-6 col-12">
 		                                        <div class="checkout-form-list">
 		                                            <label>Postcode / Zip</label>
-		                                            <input type="text" id="bill_zip" name="bill_zip" 
+		                                            <input type="text" id="bill_zip" name="bill_zip"
 		                                                placeholder="Postcode / Zip" value="<?php echo $ud->zipcode;?>">
 		                                        </div>
 		                                    </div>
@@ -542,59 +546,86 @@ $ud=get_user_details($user_id);
 		                                                    </div>
 		                                                </div>
 		                                                <div class="panel panel-default">
-		                                                    
+
 		                                                    <div id="collapseThree" class="panel-collapse collapse show"
 		                                                        role="tabpanel" aria-labelledby="headingThree">
 		                                                        <div class="panel-body">
 		                                                            <!-- <p>Pay via PayPal; you can pay with your credit card if
 		                                                                you don’t have a PayPal account.</p> -->
 
-		                                                                <div class="container mt-4">
-    <h5 class="mb-3">Select Payment Method</h5>
+		                                                            <div class="container mt-4">
+		                                                                <h5 class="mb-3">Select Payment Method</h5>
 
-    <div class="row g-3">
+		                                                                <div class="row g-3">
+		                                                                    <div class="col-md-4">
+		                                                                        <label class="payment-card">
+		                                                                            <input type="radio" name="payment_method"
+		                                                                                value="wallet">
 
-        <!-- PayPal -->
-        <div class="col-md-4">
-            <label class="payment-card">
-                <input type="radio" name="payment_method" value="paypal">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <i class="fab fa-paypal fa-2x text-primary mb-2"></i>
-                        <h6 class="mb-0">PayPal</h6>
-                    </div>
-                </div>
-            </label>
-        </div>
+		                                                                            <div class="card text-center">
+		                                                                                <div class="card-body">
+		                                                                                    <i
+		                                                                                        class="fas fa-wallet fa-2x text-primary mb-2"></i>
 
-        <!-- Stripe -->
-        <div class="col-md-4">
-            <label class="payment-card">
-                <input type="radio" name="payment_method" value="stripe">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <i class="fab fa-stripe fa-2x text-indigo mb-2"></i>
-                        <h6 class="mb-0">Stripe</h6>
-                    </div>
-                </div>
-            </label>
-        </div>
+		                                                                                    <h6 class="mb-0">
+		                                                                                        Wallet
+		                                                                                        <?php 
+																									echo currency() . (!empty($wallet->amount) ? $wallet->amount : '0');
+																								?>
+		                                                                                    </h6>
+		                                                                                </div>
+		                                                                            </div>
+		                                                                        </label>
+		                                                                    </div>
 
-        <!-- Credit Card -->
-        <div class="col-md-4">
-            <label class="payment-card">
-                <input type="radio" name="payment_method" value="card">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <i class="fas fa-credit-card fa-2x text-success mb-2"></i>
-                        <h6 class="mb-0">Credit / Debit Card</h6>
-                    </div>
-                </div>
-            </label>
-        </div>
+		                                                                    <!-- PayPal -->
+		                                                                    <div class="col-md-4">
+		                                                                        <label class="payment-card">
+		                                                                            <input type="radio" name="payment_method"
+		                                                                                value="paypal">
+		                                                                            <div class="card text-center">
+		                                                                                <div class="card-body">
+		                                                                                    <i
+		                                                                                        class="fab fa-paypal fa-2x text-primary mb-2"></i>
+		                                                                                    <h6 class="mb-0">PayPal</h6>
+		                                                                                </div>
+		                                                                            </div>
+		                                                                        </label>
+		                                                                    </div>
 
-    </div>
-</div>
+		                                                                    <!-- Stripe -->
+		                                                                    <div class="col-md-4">
+		                                                                        <label class="payment-card">
+		                                                                            <input type="radio" name="payment_method"
+		                                                                                value="stripe">
+		                                                                            <div class="card text-center">
+		                                                                                <div class="card-body">
+		                                                                                    <i
+		                                                                                        class="fab fa-stripe fa-2x text-indigo mb-2"></i>
+		                                                                                    <h6 class="mb-0">Stripe</h6>
+		                                                                                </div>
+		                                                                            </div>
+		                                                                        </label>
+		                                                                    </div>
+
+		                                                                    <!-- Credit Card -->
+		                                                                    <div class="col-md-4">
+		                                                                        <label class="payment-card">
+		                                                                            <input type="radio" name="payment_method"
+		                                                                                value="card">
+		                                                                            <div class="card text-center">
+		                                                                                <div class="card-body">
+		                                                                                    <i
+		                                                                                        class="fas fa-credit-card fa-2x text-success mb-2"></i>
+		                                                                                    <h6 class="mb-0">Credit / Debit
+		                                                                                        Card</h6>
+		                                                                                </div>
+		                                                                            </div>
+		                                                                        </label>
+		                                                                    </div>
+
+		                                                                </div>
+		                                                            </div>
 
 		                                                        </div>
 		                                                    </div>
@@ -613,7 +644,7 @@ $ud=get_user_details($user_id);
 		                            </div>
 		                        </div>
 		                    </div>
-												<input type="hidden" name="paypal_transaction_id" id="paypal_transaction_id" value="">
+		                    <input type="hidden" name="paypal_transaction_id" id="paypal_transaction_id" value="">
 
 		                </form>
 
@@ -653,19 +684,57 @@ $ud=get_user_details($user_id);
 
 		    <!-- checkout-area-end -->
 		    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-		    <!-- <script>
+		    <script>
 		    let paypalRendered = false;
 		    var finalAmount = "<?php echo $cart_total;?>";
 
-		    // Place Order → Open Modal
-		    $('#placeOrderBtn').on('click', function() {
-		        $('#confirmPaymentModal').modal('show');
+		    // NEW: wallet amount passed from PHP
+		    var walletAmount = parseFloat("<?php echo isset($wallet) && isset($wallet->amount) ? (float) $wallet->amount : 0; ?>") || 0;
+
+		    function getSelectedPaymentMethod() {
+		        return $('input[name="payment_method"]:checked').val() || '';
+		    }
+
+		    // Place Order Button Click
+		    $('#placeOrderBtn').on('click', function(e) {
+		        e.preventDefault();
+
+		        // First validate the form
+		        if (!validateForm()) return;
+
+		        const method = getSelectedPaymentMethod();
+		        if (!method) {
+		            alert('Please select a payment method.');
+		            return;
+		        }
+
+		        // Wallet flow: no PayPal, just submit (server will deduct)
+		        if (method === 'wallet') {
+		            const orderTotal = parseFloat(finalAmount) || 0;
+		            if (walletAmount < orderTotal) {
+		                const shortBy = (orderTotal - walletAmount).toFixed(2);
+		                alert('Insufficient wallet balance. Please add amount ' + shortBy + ' to your wallet.');
+		                return;
+		            }
+
+		            // submit directly (billInvoice will deduct wallet)
+		            $('#checkoutForm').submit();
+		            return;
+		        }
+
+		        // PayPal flow
+		        if (method === 'paypal') {
+		            $('#confirmPaymentModal').modal('show');
+		            return;
+		        }
+
+		        // Other methods not implemented yet
+		        alert('Selected payment method is not available right now. Please choose PayPal or Wallet.');
 		    });
 
-		    // Yes Pay Now
+		    // Yes Pay Now Button (PayPal)
 		    $('#payNowBtn').on('click', function() {
-
-		        $('#payNowBtn').hide(); // hide confirm button
+		        $('#payNowBtn').hide();
 		        $('#paypal-button-container').show();
 
 		        if (!paypalRendered) {
@@ -676,7 +745,6 @@ $ud=get_user_details($user_id);
 
 		    function renderPaypalButton() {
 		        paypal.Buttons({
-
 		            createOrder: function() {
 		                return fetch("<?= base_url('paypal/create_order'); ?>", {
 		                        method: "POST",
@@ -697,12 +765,13 @@ $ud=get_user_details($user_id);
 		                    })
 		                    .then(res => res.json())
 		                    .then(details => {
+		                        console.log('Payment Success:', details);
 
-		                        // ✅ PAYMENT SUCCESS
-		                        console.log(details);
+		                        // Store PayPal transaction ID in hidden field
+		                        $('#paypal_transaction_id').val(details.id || data.orderID);
 
-		                        // Final order place
-		                        placeFinalOrder(details.id);
+		                        // Submit the form after successful payment
+		                        $('#checkoutForm').submit();
 		                    });
 		            },
 
@@ -710,455 +779,93 @@ $ud=get_user_details($user_id);
 		                alert('Payment Cancelled');
 		                $('#payNowBtn').show();
 		                $('#paypal-button-container').hide();
+		                $('#confirmPaymentModal').modal('hide');
 		            },
 
 		            onError: function(err) {
 		                console.log(err);
-		                alert('Payment Error');
+		                alert('Payment Error: ' + (err && err.message ? err.message : 'Unknown error'));
+		                $('#payNowBtn').show();
+		                $('#paypal-button-container').hide();
 		            }
 
 		        }).render('#paypal-button-container');
 		    }
 
-		    // After payment success → order save
-		    function placeFinalOrder(paymentId) {
+		    function validateForm() {
+		        let isValid = true;
 
-		        $.ajax({
-		            url: "<?= base_url('checkout/place_order'); ?>",
-		            type: "POST",
-		            data: {
-		                payment_id: paymentId
-		            },
-		            success: function() {
-		                window.location.href = "<?= base_url('order-success'); ?>";
+		        // Clear previous errors
+		        $('.field-error').remove();
+		        $('.is-invalid').removeClass('is-invalid');
+
+		        const requiredFields = [
+		            { id: '#bill_first', name: 'First Name' },
+		            { id: '#bill_email', name: 'Email' },
+		            { id: '#bill_phone', name: 'Phone' },
+		            { id: '#bill_address1', name: 'Address' },
+		            { id: '#bill_country', name: 'Country' }
+		        ];
+
+		        requiredFields.forEach(field => {
+		            const $field = $(field.id);
+		            if (!$field.val() || !$field.val().trim()) {
+		                isValid = false;
+		                $field.addClass('is-invalid');
+		                $field.after(`<div class="field-error text-danger">${field.name} is required</div>`);
 		            }
 		        });
+
+		        // Email validation
+		        const email = $('#bill_email').val();
+		        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		        if (email && !emailRegex.test(email)) {
+		            isValid = false;
+		            $('#bill_email').addClass('is-invalid');
+		            $('#bill_email').after('<div class="field-error text-danger">Please enter a valid email</div>');
+		        }
+
+		        if (!isValid) {
+		            $('html, body').animate({
+		                scrollTop: $('.is-invalid').first().offset().top - 100
+		            }, 500);
+		        }
+
+		        return isValid;
 		    }
 		    </script>
+		    <script src="<?php echo base_url();?>assets/js/countries.js"></script>
+		    <script language="javascript">
+		    print_country("bill_country");
+		    </script>
+		    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+		    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
+		    <style>
+		    .payment-card {
+		        cursor: pointer;
+		        display: block;
+		    }
 
+		    .payment-card input[type="radio"] {
+		        display: none;
+		    }
 
-		    <script>
-		    (function() {
-		        const $ = (sel, root = document) => root.querySelector(sel);
+		    .payment-card .card {
+		        border: 2px solid #dee2e6;
+		        transition: all 0.2s ease;
+		    }
 
-		        const form = $('#checkoutForm');
-		        const shipBox = $('#ship-box');
-		        const shipInfo = $('#ship-box-info');
-		        const accountCk = $('#cbox');
-		        const accountInfo = $('#cbox_info');
+		    .payment-card input[type="radio"]:checked+.card {
+		        border-color: #0d6efd;
+		        background-color: #f0f7ff;
+		    }
 
-		        const bill = {
-		            first: $('#bill_first'),
-		            last: $('#bill_last'),
-		            fullHidden: $('#billing_name'),
-		            country: $('#bill_country'),
-		            address1: $('#bill_address1'),
-		            city: $('#bill_city'),
-		            state: $('#bill_state'),
-		            zip: $('#bill_zip'),
-		            email: $('#bill_email'),
-		            phone: $('#bill_phone')
-		        };
+		    .payment-card .card:hover {
+		        border-color: #0d6efd;
+		    }
 
-		        const ship = {
-		            first: $('#ship_first'),
-		            last: $('#ship_last'),
-		            fullHidden: $('#shipping_name'),
-		            country: $('#ship_country'),
-		            address1: $('#ship_address1'),
-		            city: $('#ship_city'),
-		            state: $('#ship_state'),
-		            zip: $('#ship_zip'),
-		            email: $('#ship_email'),
-		            phone: $('#ship_phone')
-		        };
-
-		        // Toggle sections
-		        accountCk.addEventListener('change', () => {
-		            accountInfo.style.display = accountCk.checked ? 'block' : 'none';
-		        });
-
-		        shipBox.addEventListener('change', () => {
-		            shipInfo.style.display = shipBox.checked ? 'flex' : 'none';
-		            // Simple fix to keep grid look:
-		            if (shipBox.checked) shipInfo.classList.add('row');
-		            else shipInfo.classList.remove('row');
-		        });
-
-		        // Helpers
-		        function fullName(firstEl, lastEl) {
-		            const f = (firstEl?.value || '').trim();
-		            const l = (lastEl?.value || '').trim();
-		            return [f, l].filter(Boolean).join(' ');
-		        }
-
-		        function showError(input, message) {
-		            input.classList.add('is-invalid');
-		            input.setAttribute('aria-invalid', 'true');
-
-		            let holder = input.closest('.checkout-form-list') || input.parentElement;
-		            if (!holder) holder = input;
-
-		            let msg = holder.querySelector('.field-error');
-		            if (!msg) {
-		                msg = document.createElement('div');
-		                msg.className = 'field-error';
-		                holder.appendChild(msg);
-		            }
-		            msg.textContent = message;
-		        }
-
-		        function clearErrors() {
-		            form.querySelectorAll('.is-invalid').forEach(el => {
-		                el.classList.remove('is-invalid');
-		                el.removeAttribute('aria-invalid');
-		            });
-		            form.querySelectorAll('.field-error').forEach(el => el.remove());
-		        }
-
-		        function isEmail(v) {
-		            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-		        }
-
-		        function isPhone(v) {
-		            // You can tighten this per your locale; this checks for 6+ digits
-		            const digits = (v || '').replace(/\D/g, '');
-		            return digits.length >= 6;
-		        }
-
-		        form.addEventListener('submit', function(e) {
-		            clearErrors();
-		            const errors = [];
-
-		            // 1) Build and set billing full name
-		            bill.fullHidden.value = fullName(bill.first, bill.last);
-
-		            // 2) Validate billing requireds
-		            const billingRequired = [{
-		                    el: bill.country,
-		                    label: 'Billing country is required'
-		                },
-		                {
-		                    el: bill.first,
-		                    label: 'Billing first name is required'
-		                },
-		                {
-		                    el: bill.last,
-		                    label: 'Billing last name is required'
-		                },
-		                {
-		                    el: bill.address1,
-		                    label: 'Billing address is required'
-		                },
-		                {
-		                    el: bill.city,
-		                    label: 'Billing city is required'
-		                },
-		                {
-		                    el: bill.state,
-		                    label: 'Billing state/county is required'
-		                },
-		                {
-		                    el: bill.zip,
-		                    label: 'Billing postcode/zip is required'
-		                },
-		                {
-		                    el: bill.email,
-		                    label: 'Billing email is required'
-		                },
-		                {
-		                    el: bill.phone,
-		                    label: 'Billing phone is required'
-		                }
-		            ];
-
-		            billingRequired.forEach(({
-		                el,
-		                label
-		            }) => {
-		                if (!el || !String(el.value).trim()) {
-		                    errors.push({
-		                        el,
-		                        label
-		                    });
-		                }
-		            });
-
-		            if (bill.email.value && !isEmail(bill.email.value)) {
-		                errors.push({
-		                    el: bill.email,
-		                    label: 'Enter a valid email address'
-		                });
-		            }
-		            if (bill.phone.value && !isPhone(bill.phone.value)) {
-		                errors.push({
-		                    el: bill.phone,
-		                    label: 'Enter a valid phone number'
-		                });
-		            }
-
-		            // 3) Account password required if "Create an account" checked
-		            if (accountCk.checked) {
-		                const pass = $('#account_password');
-		                if (!pass.value.trim()) {
-		                    errors.push({
-		                        el: pass,
-		                        label: 'Account password is required'
-		                    });
-		                } else if (pass.value.length < 6) {
-		                    errors.push({
-		                        el: pass,
-		                        label: 'Password must be at least 6 characters'
-		                    });
-		                }
-		            }
-
-		            // 4) Shipping block if checked
-		            if (shipBox.checked) {
-		                ship.fullHidden.value = fullName(ship.first, ship.last);
-
-		                const shippingRequired = [{
-		                        el: ship.country,
-		                        label: 'Shipping country is required'
-		                    },
-		                    {
-		                        el: ship.first,
-		                        label: 'Shipping first name is required'
-		                    },
-		                    {
-		                        el: ship.last,
-		                        label: 'Shipping last name is required'
-		                    },
-		                    {
-		                        el: ship.address1,
-		                        label: 'Shipping address is required'
-		                    },
-		                    {
-		                        el: ship.city,
-		                        label: 'Shipping city is required'
-		                    },
-		                    {
-		                        el: ship.state,
-		                        label: 'Shipping state/county is required'
-		                    },
-		                    {
-		                        el: ship.zip,
-		                        label: 'Shipping postcode/zip is required'
-		                    },
-		                    {
-		                        el: ship.email,
-		                        label: 'Shipping email is required'
-		                    },
-		                    {
-		                        el: ship.phone,
-		                        label: 'Shipping phone is required'
-		                    }
-		                ];
-		                shippingRequired.forEach(({
-		                    el,
-		                    label
-		                }) => {
-		                    if (!el || !String(el.value).trim()) {
-		                        errors.push({
-		                            el,
-		                            label
-		                        });
-		                    }
-		                });
-
-		                if (ship.email.value && !isEmail(ship.email.value)) {
-		                    errors.push({
-		                        el: ship.email,
-		                        label: 'Enter a valid shipping email address'
-		                    });
-		                }
-		                if (ship.phone.value && !isPhone(ship.phone.value)) {
-		                    errors.push({
-		                        el: ship.phone,
-		                        label: 'Enter a valid shipping phone number'
-		                    });
-		                }
-		            } else {
-		                // If not shipping to different address, reuse billing full name for shipping_name (optional)
-		                ship.fullHidden.value = bill.fullHidden.value;
-		            }
-
-		            // 5) Display errors or submit
-		            if (errors.length) {
-		                e.preventDefault();
-		                errors.forEach(({
-		                    el,
-		                    label
-		                }) => showError(el, label));
-		                // focus the first error
-		                if (errors[0]?.el && typeof errors[0].el.focus === 'function') {
-		                    errors[0].el.focus({
-		                        preventScroll: true
-		                    });
-		                    errors[0].el.scrollIntoView({
-		                        behavior: 'smooth',
-		                        block: 'center'
-		                    });
-		                }
-		                return false;
-		            }
-
-		            // (Optional) you can also normalize names here:
-		            bill.fullHidden.value = bill.fullHidden.value.trim();
-		            ship.fullHidden.value = ship.fullHidden.value.trim();
-		            // allow the form to submit
-		        });
-		    })();
-		    </script> -->
-				<script>
-let paypalRendered = false;
-var finalAmount = "<?php echo $cart_total;?>";
-
-// Place Order Button Click
-$('#placeOrderBtn').on('click', function(e) {
-    e.preventDefault();
-    
-    // First validate the form
-    if(validateForm()) {
-        $('#confirmPaymentModal').modal('show');
-    }
-});
-
-// Yes Pay Now Button
-$('#payNowBtn').on('click', function() {
-    $('#payNowBtn').hide();
-    $('#paypal-button-container').show();
-
-    if (!paypalRendered) {
-        renderPaypalButton();
-        paypalRendered = true;
-    }
-});
-
-function renderPaypalButton() {
-    paypal.Buttons({
-        createOrder: function() {
-            return fetch("<?= base_url('paypal/create_order'); ?>", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    amount: finalAmount
-                })
-            })
-            .then(res => res.json())
-            .then(data => data.id);
-        },
-
-        onApprove: function(data) {
-            return fetch("<?= base_url('paypal/capture_order/'); ?>" + data.orderID, {
-                method: "POST"
-            })
-            .then(res => res.json())
-            .then(details => {
-                console.log('Payment Success:', details);
-                
-                // Store PayPal transaction ID in hidden field
-                $('#paypal_transaction_id').val(details.id || data.orderID);
-                
-                // Submit the form after successful payment
-                $('#checkoutForm').submit();
-            });
-        },
-
-        onCancel: function() {
-            alert('Payment Cancelled');
-            $('#payNowBtn').show();
-            $('#paypal-button-container').hide();
-            $('#confirmPaymentModal').modal('hide');
-        },
-
-        onError: function(err) {
-            console.log(err);
-            alert('Payment Error: ' + err.message);
-            $('#payNowBtn').show();
-            $('#paypal-button-container').hide();
-        }
-
-    }).render('#paypal-button-container');
-}
-
-function validateForm() {
-    let isValid = true;
-    
-    // Clear previous errors
-    $('.field-error').remove();
-    $('.is-invalid').removeClass('is-invalid');
-    
-    // Simple validation example
-    const requiredFields = [
-        {id: '#bill_first', name: 'First Name'},
-        
-        {id: '#bill_email', name: 'Email'},
-        {id: '#bill_phone', name: 'Phone'},
-        {id: '#bill_address1', name: 'Address'},
-        {id: '#bill_country', name: 'Country'}
-    ];
-    
-    requiredFields.forEach(field => {
-        const $field = $(field.id);
-        if (!$field.val().trim()) {
-            isValid = false;
-            $field.addClass('is-invalid');
-            $field.after(`<div class="field-error text-danger">${field.name} is required</div>`);
-        }
-    });
-    
-    // Email validation
-    const email = $('#bill_email').val();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (email && !emailRegex.test(email)) {
-        isValid = false;
-        $('#bill_email').addClass('is-invalid');
-        $('#bill_email').after('<div class="field-error text-danger">Please enter a valid email</div>');
-    }
-    
-    if (!isValid) {
-        $('html, body').animate({
-            scrollTop: $('.is-invalid').first().offset().top - 100
-        }, 500);
-    }
-    
-    return isValid;
-}
-</script>
-		    
-<script src="<?php echo base_url();?>assets/js/countries.js"></script>
-<script language="javascript">print_country("bill_country");</script>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-
-<style>
-.payment-card {
-    cursor: pointer;
-    display: block;
-}
-
-.payment-card input[type="radio"] {
-    display: none;
-}
-
-.payment-card .card {
-    border: 2px solid #dee2e6;
-    transition: all 0.2s ease;
-}
-
-.payment-card input[type="radio"]:checked + .card {
-    border-color: #0d6efd;
-    background-color: #f0f7ff;
-}
-
-.payment-card .card:hover {
-    border-color: #0d6efd;
-}
-.text-indigo {
-    color: #635bff;
-}
-</style>
+		    .text-indigo {
+		        color: #635bff;
+		    }
+		    </style>

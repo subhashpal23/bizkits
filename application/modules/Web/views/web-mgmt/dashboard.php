@@ -54,28 +54,12 @@
                                     <div class="tab-pane fade show active" id="dashboad" role="tabpanel">
                                         <div class="myaccount-content">
                                             <h5>Welcome <?php echo $this->session->userdata('username'); ?></h5>
-                                            <!-- <div class="welcome">
-                                                <p>Hello,
-                                                    <strong><?php echo $this->session->userdata('username'); ?></strong>
-                                                    (If Not
-                                                    <strong><?php echo $this->session->userdata('username'); ?>
-                                                        !</strong><a href="<?php echo base_url(); ?>logout"
-                                                        class="logout">
-                                                        Logout</a>)
-                                                </p>
-                                            </div> -->
-                                            <!--<p class="mb-0">From your account dashboard. you can easily check &
-                                                        view your recent orders, manage your shipping and billing addresses
-                                                        and edit your password and account details.</p>-->
                                             <div class="row mt-3 mb-3">
                                                 
                                                 <!-- Users -->
                                                 <div class="col-md-3 col-sm-6">
                                                     <div class="card text-center p-3 border-primary border-2" style="cursor:pointer;" onclick="redirect('experts')">
                                                         <?php 
-															//  echo '<pre>';
-															//  print_r($_SESSION['userType']);
-															//  exit;
 															if($_SESSION['userType'] == '2')
 															{
 															?>
@@ -186,18 +170,7 @@
                                                 
                                                 <?php
 														}
-														?>
-                                                <!-- Revenue -->
-                                                <!-- <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-danger border-2">
-                                                        <div class="card-body">
-                                                            <div class="icon text-danger mb-2"><i
-                                                                    class="bi bi-currency-dollar"></i></div>
-                                                            <h5 class="card-title">Upgrade</h5>
-                                                            <h2 class="fw-bold">$300</h2>
-                                                        </div>
-                                                    </div>
-                                                </div> -->
+															?>
                                             </div>
                                             
                                         </div>
@@ -265,49 +238,42 @@
                                     <div class="tab-pane fade show active" id="expert_booking" role="tabpanel">
                                         <div class="myaccount-content">
                                             <h5>Connect with Experts</h5>
-                                            <!-- <select id="expertSelect" class="form-select mb-3">
-														<option value="">-- Select Expert --</option>
-														<?php foreach ($expert_list as $ex) { ?>
-														<option value="<?= $ex->user_id ?>">
-															<?= $ex->first_name . ' ' . $ex->last_name ?>     (ID: <?= $ex->user_id ?>)
-														</option>
-														<?php } ?>
-														</select> -->
                                             <div class="row">
                                                 <?php if($totalcalls){?>
                                                 <div class="col-md-9">
                                                     <div id="customerCalendar"></div>
+                                                    <?php
+                                                        $sessionUserType = $this->session->userdata('userType');
+                                                        $sessionMemberType = $this->session->userdata('member_type');
+                                                        $isExpert = ((string)$sessionUserType === '1' || (string)$sessionMemberType === '1');
+                                                    ?>
+                                                   
                                                 </div>
 
-                                                <div class="col-md-3 card">
+                                                
+                                                <?php
+                                                }
+                                                // else
+                                                // {
+                                                //     echo "<p style='color:red'>You dont have any sessions count. Please purchase sessions.</p>";
+                                                // }
+                                               
+												else
+                                                {?>
+                                                     <!-- <h5 class="mt-3">Expert Calendar (Meeting Requests)</h5> -->
+													 <div class="col-md-9">
+													 <div id="expertCalendar"></div>
+												</div>
+                                               <?php  }?>
+											   <div class="col-md-3 card">
                                                     <h5 id="title">Select Date</h5>
                                                     <h6 id="date"></h6>
                                                     <div id="desc"></div>
                                                 </div>
 
-                                                <!-- <div id="customerCalendar"></div> -->
-                                                
                                                 <button class="btn btn-primary mt-2" onclick="openRequestModal()">
                                                     Add Request
                                                 </button>
-                                                <?php
-                                                }
-                                                else
-                                                {
-                                                    echo "<p style='color:red'>You dont have any sessions count. Please purchase sessions.</p>";
-                                                }
-                                                ?>
-                                                <!-- <div class="col-md-9 card">
-													<div id="calendar_customer" class="card-body"></div>
-													</div> -->
-                                                <!-- <div class="col-md-3 card">
-													<div id="infoBoxExpert" class="mt-2">
-
-													<h3 id="titleExpert">Select Date</h3>
-													<h5 id="dateExpert"></h5>
-													<p id="descExpert"></p>
-													</div>
-													</div> -->
                                             </div>
 
                                         </div>
@@ -471,8 +437,6 @@
                                         <div class="myaccount-content">
                                             <h5>Google Meet</h5>
 
-                                            <!-- <a href="<?php echo base_url('webgooglemeet'); ?>"
-                                                class="btn btn-sqr">Create Meeting</a> -->
                                             <table class="table table-bordered">
                                                 <tr>
                                                     <th>Customer</th>
@@ -510,72 +474,6 @@
                                                 </tr>
                                                 <?php endforeach; ?>
                                             </table>
-
-                                            <!-- <div class="row">
-                                                <div class="col-md-9 card">
-                                                    <div id="calendar" class="card-body"></div>
-                                                </div>
-                                                <div class="col-md-3 card">
-                                                    <button id="addEventBtn" class="btn btn-primary">➕ Add
-                                                        Event</button>
-
-                                                    <div id="infoBox" class="mt-2">
-
-                                                        <h3 id="title">Select Date</h3>
-                                                        <h5 id="date"></h5>
-                                                        <p id="desc"></p>
-                                                    </div>
-                                                </div>
-                                            </div> -->
-                                            <!-- <div class="modal fade" id="addEventModal" tabindex="-1">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Add Event</h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal"></button>
-                                                        </div>
-
-                                                        <div class="modal-body">
-                                                            <input type="hidden" id="event_id">
-
-                                                            <input type="hidden"
-                                                                value="<?php echo $_SESSION['user_id']; ?>"
-                                                                id="add_user_id" class="form-control">
-
-                                                            <div class="mb-2">
-                                                                <label>Title</label>
-                                                                <input type="text" id="add_title" class="form-control"
-                                                                    required>
-                                                            </div>
-
-                                                            <div class="mb-2">
-                                                                <label>Description</label>
-                                                                <textarea id="add_description" class="form-control"
-                                                                    required></textarea>
-                                                            </div>
-
-                                                            <div class="mb-2">
-                                                                <label>Date</label>
-                                                                <input type="date" id="add_date" class="form-control"
-                                                                    required>
-                                                            </div>
-
-                                                            <div class="modal-footer">
-                                                                <button class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Close</button>
-                                                                <button class="btn btn-success"
-                                                                    id="saveAddEvent">Submit</button>
-                                                            </div>
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-
-
-
-                                            </div> -->
                                         </div>
                                     </div>
                                     <!-- Single Tab Content End -->
@@ -899,515 +797,186 @@ $(document).on('click', '.viewPayment', function() {
     $('#paymentModal').modal('show');
 });
 </script>
-<!-- <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            var today = new Date();
-            var todayStr = today.toISOString().split('T')[0];
-
-            var eventsData = [{
-                    title: 'Meeting',
-                    start: '2026-01-10',
-                    description: 'Office meeting at 10 AM'
-                },
-                {
-                    title: 'Birthday',
-                    start: '2026-01-15',
-                    description: 'Neeraj Birthday Party 🎉'
-                },
-                {
-                    title: 'Project Deadline',
-                    start: '2026-01-20',
-                    description: 'Final project submission'
-                }
-            ];
-
-            var calendarEl = document.getElementById('calendar');
-
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                events: eventsData,
-
-                dateClick: function(info) {
-                    document.getElementById('title').innerText = 'Selected Date';
-                    document.getElementById('date').innerText = info.dateStr;
-                    document.getElementById('desc').innerText = 'No event selected';
-                },
-
-                eventClick: function(info) {
-                    document.getElementById('title').innerText = info.event.title;
-                    document.getElementById('date').innerText =
-                        info.event.start.toDateString();
-                    document.getElementById('desc').innerText =
-                        info.event.extendedProps.description;
-                }
-            });
-
-            calendar.render();
-
-            // 🔥 TODAY AUTO SHOW LOGIC
-            var todayEvent = eventsData.find(e => e.start === todayStr);
-
-            if (todayEvent) {
-                document.getElementById('title').innerText = todayEvent.title;
-                document.getElementById('date').innerText = today.toDateString();
-                document.getElementById('desc').innerText = todayEvent.description;
-            } else {
-                document.getElementById('title').innerText = 'Today';
-                document.getElementById('date').innerText = today.toDateString();
-                document.getElementById('desc').innerText = 'Aaj koi event nahi hai';
-            }
-        });
-    </script> -->
 
 <script>
+let customerCalendar;
+let expertCalendar;
+let allEvents = [];
+let allExpertEvents = [];
+
 document.addEventListener('DOMContentLoaded', function() {
 
-    var addModal = new bootstrap.Modal(document.getElementById('addEventModal'));
-
-    let allEvents = [];
-
-    var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-        initialView: 'dayGridMonth',
-
-        events: function(fetchInfo, successCallback) {
-            fetch("<?= base_url('calendar/fetch_events') ?>")
-                .then(res => res.json())
-                .then(data => {
-                    allEvents = data; // sab events store
-                    successCallback(data); // calendar load
-                });
-        },
-
-
-        // 📅 DATE CLICK
-        dateClick: function(info) {
-
-            let selectedDate = info.dateStr;
-
-            let filtered = allEvents.filter(ev => ev.start === selectedDate);
-
-            document.getElementById('date').innerText = selectedDate;
-
-            if (filtered.length > 0) {
-
-                document.getElementById('title').innerText = 'Events';
-                let descHtml = '';
-
-                filtered.forEach(ev => {
-                    descHtml += `
-                       <div class="border p-2 mb-2 rounded">
-							<b>${ev.title}</b><br>
-							${ev.description}<br>
-
-							<button 
-								class="btn btn-sm btn-warning mt-1"
-								onclick="editEvent(${ev.id})">
-								Edit
-							</button>
-
-							<button 
-								class="btn btn-sm btn-danger mt-1"
-								onclick="deleteEvent(${ev.id})">
-								Delete
-							</button>
-						</div>
-                    `;
-                });
-
-                document.getElementById('desc').innerHTML = descHtml;
-
-            } else {
-
-                document.getElementById('title').innerText = 'No Event';
-                // document.getElementById('desc').innerText = 'Is date par koi event nahi hai';
-            }
-        }
-    });
-
-    calendar.render();
-
-    // ➕ OPEN ADD MODAL
-    $('#addEventBtn').click(function() {
-        $('#saveAddEvent').text('Submit');
-
-        $('#add_title,#add_description,#add_date,#event_id').val('');
-        addModal.show();
-    });
-
-    // 💾 SAVE ADD EVENT
-    $('#saveAddEvent').off('click').on('click', function() {
-
-        let id = $('#event_id').val();
-        let title = $('#add_title').val().trim();
-        let description = $('#add_description').val().trim();
-        let event_date = $('#add_date').val();
-        let user_id = $('#add_user_id').val();
-
-        if (title === '' || description === '' || event_date === '') {
-            alert('All fields are required');
-            return;
-        }
-
-        $.post("<?= base_url('calendar/save_event') ?>", {
-            id: id, // 👈 empty = add | value = edit
-            title: title,
-            description: description,
-            event_date: event_date,
-            user_id: user_id
-        }, function() {
-
-            calendar.refetchEvents();
-            addModal.hide();
-            resetForm();
-
-        }, 'json');
-    });
-
-    window.editEvent = function(id) {
-
-        $.get("<?= base_url('calendar/get_event/') ?>" + id, function(res) {
-
-            if (!res.status) {
-                alert('Event not found');
-                return;
-            }
-
-            let ev = res.data;
-
-            $('#event_id').val(ev.id);
-            $('#add_title').val(ev.title);
-            $('#add_description').val(ev.description);
-            $('#add_date').val(ev.event_date);
-            $('#add_user_id').val(ev.user_id);
-
-            $('#saveAddEvent').text('Update Event');
-
-            addModal.show();
-
-        }, 'json');
-    }
-    window.deleteEvent = function(id) {
-
-        if (!confirm('Are you sure you want to delete this event?')) {
-            return;
-        }
-
-        $.ajax({
-            url: "<?= base_url('calendar/delete_event/') ?>" + id,
-            type: "POST",
-            dataType: "json",
-            success: function(res) {
-
-                if (res.status) {
-
-                    calendar.refetchEvents();
-
-                    // infoBox reset
-                    $('#title').text('Select Date');
-                    $('#date').text('');
-                    $('#desc').html('');
-
-                } else {
-                    alert(res.msg || 'Delete failed');
-                }
-            }
-        });
-    }
-
-
-    // 💾 UPDATE EVENT
-    $('#saveEditEvent').click(function() {
-        $.post("<?= base_url('calendar/save_event') ?>", {
-            id: $('#edit_event_id').val(),
-            title: $('#edit_title').val(),
-            description: $('#edit_description').val(),
-            event_date: $('#edit_date').val(),
-            user_id: $('#edit_user_id').val()
-        }, function() {
-            calendar.refetchEvents();
-            addModal.hide();
-        });
-    });
-
-});
-</script>
-<!-- <script>
-    let calendar_customer;
-    let allEvents = [];
-    let selectedDateGlobal = '';
-
-    document.addEventListener('DOMContentLoaded', function() {
-
-        let customerCalendar;
-
-        document.addEventListener('DOMContentLoaded', function() {
-
-            customerCalendar = new FullCalendar.Calendar(
-                document.getElementById('customerCalendar'), {
-                    initialView: 'dayGridMonth',
-
-                    events: "<?= base_url('calendar/customer_calendar_events') ?>",
-
-                    dateClick: function(info) {
-                        $('#req_date').val(info.dateStr);
-                        openAddModal();
-                    }
-                });
-
-            customerCalendar.render();
-        });
-
-        calendar_customer = new FullCalendar.Calendar(
-            document.getElementById('calendar_customer'), {
+    // =====================
+    // CUSTOMER CALENDAR
+    // =====================
+    if(document.getElementById('customerCalendar')){
+        customerCalendar = new FullCalendar.Calendar(
+            document.getElementById('customerCalendar'), {
                 initialView: 'dayGridMonth',
-                selectable: true,
-                editable: false,
-
-                /* =========================
-                   LOAD EVENTS
-                ========================= */
                 events: function(fetchInfo, successCallback) {
-
-                    let expertId = document.getElementById('expertSelect').value;
-
-                    if (!expertId) {
-                        successCallback([]);
-                        return;
-                    }
-
-                    fetch("<?= base_url('calendar/get_expert_events/') ?>" + expertId)
+                    fetch("<?= base_url('calendar/customer_calendar_events') ?>")
                         .then(res => res.json())
                         .then(data => {
                             allEvents = data;
                             successCallback(data);
                         });
                 },
-
-                /* =========================
-                   EVENT COLOR & LABEL
-                ========================= */
-                eventDidMount: function(info) {
-
-                    let ev = info.event.extendedProps;
-
-                    // 🟢 My booking
-                    if (ev.is_my_booking) {
-                        info.el.style.backgroundColor = '#198754';
-                        info.el.style.borderColor = '#198754';
-                        info.el.title = 'Booked by you';
-                    }
-                    // 🔴 Booked by others
-                    else if (ev.booked_by) {
-                        info.el.style.backgroundColor = '#dc3545';
-                        info.el.style.borderColor = '#dc3545';
-                        info.el.title = 'Already booked';
-                    }
-                    // 🔵 Available
-                    else {
-                        info.el.style.backgroundColor = '#0d6efd';
-                        info.el.style.borderColor = '#0d6efd';
-                        info.el.title = 'Available';
-                    }
-                },
-
-                /* =========================
-                   DATE CLICK
-                ========================= */
                 dateClick: function(info) {
-                    selectedDateGlobal = info.dateStr;
-                    refreshRightPanel();
+                    let selectedDate = info.dateStr;
+                    $('#date').text(selectedDate);
+                    let filtered = allEvents.filter(ev => ev.start === selectedDate);
+                    if (filtered.length > 0) {
+                        $('#title').text('Your Meeting');
+                        let html = '';
+                        filtered.forEach(ev => {
+                            html += `
+                            <div class="border p-2 mb-2 rounded">
+                                <b>${ev.title}</b><br>
+                                <small>${ev.message ?? ''}</small><br>
+                                ${ev.meet_link ? `${ev.meet_link}` : ''}
+                            </div>`;
+                        });
+                        $('#desc').html(html);
+                    } else {
+                        $('#title').text('No Meeting');
+                        $('#desc').html('<span class="text-muted">There are no meetings scheduled for this date.</span>');
+                    }
                 }
             }
         );
-
-        calendar_customer.render();
-
-        /* =========================
-           EXPERT CHANGE
-        ========================= */
-        document.getElementById('expertSelect').addEventListener('change', function() {
-            calendar_customer.refetchEvents();
-            document.getElementById('titleExpert').innerText = 'Select Date';
-            document.getElementById('dateExpert').innerText = '';
-            document.getElementById('descExpert').innerHTML = '';
-            selectedDateGlobal = '';
-        });
-    });
-
-    /* =========================
-       RIGHT PANEL REFRESH
-    ========================= */
-    function refreshRightPanel() {
-
-        if (!selectedDateGlobal) return;
-
-        document.getElementById('dateExpert').innerText = selectedDateGlobal;
-
-        let filtered = allEvents.filter(ev => ev.start === selectedDateGlobal);
-
-        if (filtered.length > 0) {
-
-            document.getElementById('titleExpert').innerText = 'Events';
-
-            let descHtml = '';
-
-            filtered.forEach(ev => {
-
-                let desc = ev.description ? ev.description : 'No description';
-                let btnHtml = '';
-
-                if (!ev.booked_by) {
-
-                    btnHtml = `
-                    <button class="btn btn-sm btn-success mt-1"
-                        onclick="bookEvent(${ev.id})">
-                        Book Now
-                    </button>
-                `;
-
-                } else if (ev.is_my_booking) {
-
-                    btnHtml = `
-                    <button class="btn btn-sm btn-danger mt-1"
-                        onclick="cancelBooking(${ev.id})">
-                        Cancel Booking
-                    </button>
-                `;
-
-                } else {
-
-                    btnHtml = `
-                    <button class="btn btn-sm btn-secondary mt-1" disabled>
-                        Booked
-                    </button>
-                `;
-                }
-
-                descHtml += `
-                <div class="border p-2 mb-2 rounded">
-                    <b>${ev.title}</b><br>
-                    ${desc}<br>
-                    ${btnHtml}
-                </div>
-            `;
-            });
-
-            document.getElementById('descExpert').innerHTML = descHtml;
-
-        } else {
-
-            document.getElementById('titleExpert').innerText = 'No Event';
-            document.getElementById('descExpert').innerHTML =
-                '<span class="text-muted">Is date par koi event nahi hai</span>';
-        }
+        customerCalendar.render();
     }
 
-    /* =========================
-       BOOK EVENT
-    ========================= */
-    function bookEvent(eventId) {
+    // =====================
+    // EXPERT CALENDAR
+    // =====================
+    <?php
+        $sessionUserType = $this->session->userdata('userType');
+        $sessionMemberType = $this->session->userdata('member_type');
+        $isExpert = ((string)$sessionUserType === '1' || (string)$sessionMemberType === '1');
+    ?>
+    <?php if($isExpert){ ?>
+    if(document.getElementById('expertCalendar')){
+        expertCalendar = new FullCalendar.Calendar(
+            document.getElementById('expertCalendar'), {
+                initialView: 'dayGridMonth',
+                events: function(fetchInfo, successCallback) {
+                    fetch("<?= base_url('calendar/expert_calendar_events') ?>")
+                        .then(res => res.json())
+                        .then(data => {
+                            allExpertEvents = data;
+                            successCallback(data);
+                        });
+                },
+                dateClick: function(info) {
+                    let selectedDate = info.dateStr;
+                    $('#date').text(selectedDate);
 
-        $.post("<?= base_url('calendar/book_event') ?>", {
-            event_id: eventId
-        }, function(res) {
-
-            let r = JSON.parse(res);
-            alert(r.msg);
-
-            calendar_customer.refetchEvents();
-
-            setTimeout(() => {
-                refreshRightPanel();
-            }, 300);
-        });
-    }
-
-    /* =========================
-       CANCEL BOOKING
-    ========================= */
-    function cancelBooking(eventId) {
-
-        if (!confirm('Are you sure you want to cancel booking?')) return;
-
-        $.post("<?= base_url('calendar/cancel_booking') ?>", {
-            event_id: eventId
-        }, function(res) {
-
-            let r = JSON.parse(res);
-            alert(r.msg);
-
-            calendar_customer.refetchEvents();
-
-            setTimeout(() => {
-                refreshRightPanel();
-            }, 300);
-        });
-    }
-</script> -->
-<script>
-let customerCalendar;
-let allEvents = [];
-
-document.addEventListener('DOMContentLoaded', function() {
-
-    customerCalendar = new FullCalendar.Calendar(
-        document.getElementById('customerCalendar'), {
-            initialView: 'dayGridMonth',
-
-            events: function(fetchInfo, successCallback) {
-                fetch("<?= base_url('calendar/customer_calendar_events') ?>")
-                    .then(res => res.json())
-                    .then(data => {
-                        allEvents = data;
-                        successCallback(data);
-                    });
-            },
-
-            // 👉 Date click = show data (NO modal)
-            dateClick: function(info) {
-
-                let selectedDate = info.dateStr;
-                $('#date').text(selectedDate);
-
-                let filtered = allEvents.filter(ev => ev.start === selectedDate);
-
-                if (filtered.length > 0) {
-
-                    $('#title').text('Your Meeting');
-
-                    let html = '';
-                    filtered.forEach(ev => {
-                        html += `
-                        <div class="border p-2 mb-2 rounded">
-                            <b>${ev.title}</b><br>
-                            <small>${ev.message ?? ''}</small><br>
-                            ${ev.meet_link ?? ''}
-                        </div>`;
+                    // normalize requested_date (start) to date-only for matching
+                    let filtered = (allExpertEvents || []).filter(ev => {
+                        const raw = (ev.start != null) ? String(ev.start) : '';
+                        const dateOnly = raw ? raw.substring(0,10) : '';
+                        return dateOnly === selectedDate;
                     });
 
-                    $('#desc').html(html);
+                    if (filtered.length > 0) {
+                        $('#title').text('Meeting Requests');
+                        let html = '';
 
-                } else {
-                    $('#title').text('No Meeting');
-                    $('#desc').html(
-                        '<span class="text-muted">There are no meetings scheduled for this date.</span>'
-                    );
+                        filtered.forEach(ev => {
+                            let actions = '';
+
+                            if (ev.status === 'pending') {
+                                actions = `
+                                    <a href="<?= site_url('webgooglemeet/createMeeting/') ?>${ev.id}" class="btn btn-success btn-sm mt-2">Approve</a>
+                                     <a href="<?= site_url('meeting/reject/')?>${ev.id}"
+                                                            class="btn btn-danger btn-sm"
+                                                            onclick="return confirm('Are you sure you want to reject this meeting?')">
+                                                            Reject</a>
+                                `;
+                            } else if (ev.status === 'approved') {
+                                const link = (ev.meet_link != null) ? String(ev.meet_link).trim() : '';
+                                if (link !== '') {
+                                    actions = `
+                                       
+                                        <div class="small" style="word-break:break-all;">${link}</div>
+                                    `;
+                                } else {
+                                    actions = `<span class="badge bg-success mt-2">Approved</span>`;
+                                }
+                            } else if (ev.status === 'rejected') {
+                                actions = `<span class="badge bg-danger mt-2">Rejected</span>`;
+                            }
+
+                            html += `
+                                <div class="border p-2 mb-2 rounded">
+                                    <b>${ev.title}</b><br>
+                                    <small>${(ev.customer_name ?? '')} ${(ev.customer_email ? '('+ev.customer_email+')' : '')}</small><br>
+                                    <small>${ev.message ?? ''}</small><br>
+                                    ${actions}
+                                </div>
+                            `;
+                        });
+
+                        $('#desc').html(html);
+                    } else {
+                        $('#title').text('No Request');
+                        $('#desc').html('<span class="text-muted">No meeting requests for this date.</span>');
+                    }
                 }
             }
-        }
-    );
+        );
+        expertCalendar.render();
+    }
+    <?php } ?>
 
-    customerCalendar.render();
 });
 
-// 👉 Add Event button se modal open
+// Replace inline onclick usage with delegated handlers (works for dynamic HTML)
+$(document).off('click', '.js-approve-request').on('click', '.js-approve-request', function(){
+    const id = $(this).data('id');
+    if(!id) return;
+    approveRequest(id);
+});
+
+$(document).off('click', '.js-reject-request').on('click', '.js-reject-request', function(){
+    const id = $(this).data('id');
+    if(!id) return;
+    rejectRequest(id);
+});
+
+function approveRequest(id){
+    $.getJSON("<?= base_url('meeting/approve_ajax/') ?>"+id, function(res){
+        if(!res.status){
+            alert(res.msg || 'Approve failed');
+            return;
+        }
+        // redirect to existing meeting creation flow
+        if(res.redirect){
+            window.location.href = res.redirect;
+            return;
+        }
+    });
+}
+
+function rejectRequest(id){
+    if(!confirm('Reject this meeting request?')) return;
+
+    $.getJSON("<?= base_url('meeting/reject_ajax/') ?>"+id, function(res){
+        if(res.status){
+            alert(res.msg || 'Rejected');
+            if(expertCalendar) expertCalendar.refetchEvents();
+        }else{
+            alert(res.msg || 'Reject failed');
+        }
+    });
+}
+
 function openRequestModal() {
     $('#addEventForm')[0].reset();
     $('#requestModal').modal('show');
 }
 
-// 👉 Send meeting request
 function sendRequest() {
 
     let expert_id = $('#expert_id').val();

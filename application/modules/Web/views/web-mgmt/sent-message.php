@@ -1,6 +1,4 @@
-
-
-      <!-- breadcrumbs-area-start -->
+<!-- breadcrumbs-area-start -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
@@ -69,16 +67,15 @@
                <?php    
                }
                ?>
-            <table class="table datatable-responsive">
-               <thead>
+            <table class="table table-striped table-bordered align-middle mb-0">
+               <thead class="table-light">
                   <tr>
-                     <th>Sr.No</th>
-                     
-                     <th>Date </th>
+                     <th style="width:70px">Sr.No</th>
+                     <th style="width:140px">Date</th>
                      <th>Subject</th>
-                     <th>Sent To</th>
-                     <th>Attachment</th>
-                     <th>Action</th>
+                     <th style="width:180px">Sent To</th>
+                     <th style="width:160px">Attachment</th>
+                     <th style="width:110px">Action</th>
                   </tr>
                </thead>
                <tbody>
@@ -93,7 +90,6 @@
                   ?>
                      <tr>
                         <td><?php echo $sno;?></td>
-                        
                         <td><?php echo date(date_formats(),strtotime($msg->ts));?></td>
                         <td><?php echo $msg->subject;?></td>
                         <td><?php echo $msg->receiver_name;?></td>
@@ -102,27 +98,45 @@
                            if(!empty($msg->attachment))
                            {
                            ?>
-                           <a href="<?php echo ci_site_url();?>uploads/images/<?php echo $msg->attachment;?>" target="_blank">View Attachment</a>
+                           <a class="btn btn-sm btn-outline-primary" href="<?php echo ci_site_url();?>uploads/images/<?php echo $msg->attachment;?>" target="_blank" rel="noopener">View</a>
                            <?php    
                            } 
                            else 
                            {
                            ?>
-                           ---
+                           <span class="text-muted">---</span>
                            <?php    
                            }
                            ?>
                         </td>
                         <td>
-                           
-                                 <a href="#" msg-id="<?php echo ID_encode($msg->id);?>" class="read_msg" data-popup="tooltip" title="" data-original-title="Read Message" data-toggle="modal" data-target="#modal_form_vertical"><i class="fa fa-eye"></i></a>
-                              
-                                 <a onclick="return deleteConfirm();" href="<?php echo ci_site_url();?>admin/MessagePanel/deleteSentMessage/<?php echo ID_encode($msg->id);?>" data-popup="tooltip" title="" data-original-title="Close Message"><i class="fa fa-trash"></i></a>
-                              
+                           <div class="d-flex gap-2">
+                              <button 
+                                 type="button"
+                                 class="btn btn-sm btn-outline-success read_msg"
+                                 data-msg-id="<?php echo ID_encode($msg->id);?>"
+                                 data-bs-toggle="modal"
+                                 data-bs-target="#modal_form_vertical"
+                                 title="View">
+                                 <i class="fa fa-eye"></i>
+                              </button>
+
+                              <a class="btn btn-sm btn-outline-danger js-confirm-delete" data-confirm="Are you sure you want to delete this message?" href="<?php echo ci_site_url();?>Web/deleteSentMessage/<?php echo ID_encode($msg->id);?>" title="Delete">
+                                 <i class="fa fa-trash"></i>
+                              </a>
+                           </div>
                         </td>
                      </tr>                  
                   <?php       
                      }
+                  }
+                  else
+                  {
+                  ?>
+                     <tr>
+                        <td colspan="6" class="text-center text-muted">No sent messages found.</td>
+                     </tr>
+                  <?php
                   }
                   ?>
                </tbody>
@@ -144,30 +158,16 @@
 </div>
 
 <!-- Vertical form modal -->
-      <div id="modal_form_vertical" class="modal fade">
-         <div class="modal-dialog">
+      <div id="modal_form_vertical" class="modal fade" tabindex="-1" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                <div class="modal-header">
-                  <button type="button" class="close" data-dismiss="modal">&times;</button>
                   <h5 class="modal-title" id="msg_subject"></h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                </div>
-               <form action="#">
-                  <div class="modal-body">
-                     <p id="msg"></p>
-                     <!--
-                     <div class="form-group">
-                        <div class="row">
-                           <textarea rows="5" cols="5" class="form-control" placeholder="Reply Message"></textarea>
-                        </div>
-                     </div>
-                    -->
-                  </div>
-                  <!--
-                  <div class="modal-footer">
-                     <button type="submit" class="btn btn-primary">Reply Message</button>
-                  </div>
-                  -->
-               </form>
+               <div class="modal-body">
+                  <div id="msg" class="text-break"></div>
+               </div>
             </div>
          </div>
       </div>
@@ -270,29 +270,50 @@ $pay = $this->session->flashdata('payment_success'); ?>
 <!-- my account wrapper end -->
 <script>
     $(document).ready(function(){
-  $(".read_msg").click(function(){
-     var msg_id=$(this).attr("msg-id");
-     //alert(msg_id);
-     $.ajax({
-                   url: "<?php echo ci_site_url();?>Web/readMessage/", // Url to which the request is send
-                   type: "POST", // Type of request to be send, called as method
-                   data: {'msg_id':msg_id}, 
-                   beforeSend: function () {
-                       $.loader("on", '<?php echo ci_site_url();?>/images/default.svg');
-                   }, 
-                   success: function (msg)  
-                   {
-                     $("#msg_subject").html('Subject :'+msg.subject);
-                     $("#msg").html('<h5>Message :</h5>'+msg.message);
-                   },
-                   complete: function () {
-                       $.loader("off", '<?php echo ci_site_url();?>/images/default.svg');
-                   }
-               });//end $.ajax
 
+      // confirm delete
+      $(document).on('click', '.js-confirm-delete', function(e){
+        var msg = $(this).data('confirm') || 'Are you sure you want to delete?';
+        if(!confirm(msg)) {
+          e.preventDefault();
+          return false;
+        }
+      });
 
-  });//end read msg click here
-});//end ready
+      // delegated handler so it works even if table is re-rendered
+      $(document).on('click', '.read_msg', function(){
+        var msg_id = $(this).data('msg-id');
+
+        // reset modal content while loading
+        $('#msg_subject').text('Loading...');
+        $('#msg').html('<div class="text-muted">Please wait...</div>');
+
+        $.ajax({
+          url: "<?php echo ci_site_url();?>Web/readMessage/",
+          type: "POST",
+          dataType: "json",
+          data: { msg_id: msg_id },
+          success: function (res) {
+            // support both {subject,message} and {status,data:{...}} formats
+            var subject = res?.subject ?? res?.data?.subject ?? '';
+            var message = res?.message ?? res?.data?.message ?? '';
+
+            $('#msg_subject').text(subject ? ('Subject: ' + subject) : 'Message');
+            $('#msg').html(message ? ('<h6 class="mb-2">Message</h6><div>' + message + '</div>') : '<div class="text-muted">No message content.</div>');
+          },
+          error: function() {
+            $('#msg_subject').text('Error');
+            $('#msg').html('<div class="text-danger">Unable to load message. Please try again.</div>');
+          }
+        });
+      });
+
+    });//end ready
+
+    // backward compatible (if any old onclick exists somewhere)
+    function deleteConfirm(){
+      return confirm('Are you sure you want to delete this message?');
+    }
 
 $(window).on('load', function() {
     <?php if ($this->session->flashdata('payment_success')) { ?>

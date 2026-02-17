@@ -114,6 +114,10 @@ $route['calendar/cancel_booking'] = 'Web/cancel_booking';
 $route['paypal/create_order'] = 'Web/create_order';
 $route['paypal/capture_order/(:any)'] = 'Web/capture_order/$1';
 
+$route['calendar/expert_calendar_events'] = 'Web/expert_calendar_events';
+$route['meeting/approve_ajax/(:num)'] = 'Web/meeting_approve_ajax/$1';
+$route['meeting/reject_ajax/(:num)'] = 'Web/meeting_reject_ajax/$1';
+
 $route['invoice'] = 'Web/invoice';
 $route['logout'] = 'Web/logout';
 $route['Affiliate'] = 'Affiliate/index';

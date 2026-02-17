@@ -14,12 +14,26 @@ class MarketingTools extends Common_Controller
 		$this->load->model("account_model");
 		$this->load->model("marketing_tools_model");
 	} 
+
+	private function getCompUsernameSafe()
+	{
+		if (defined('COMP_USERNAME') && !empty(COMP_USERNAME)) {
+			return COMP_USERNAME;
+		}
+		$sessionUsername = $this->session->userdata('username');
+		if (!empty($sessionUsername)) {
+			return $sessionUsername;
+		}
+		return (defined('COMP_USER_ID') ? (string)COMP_USER_ID : '');
+	}
+
 	public function viewReferralLinks()
 	{
 		$data=array();
-		$data['referral_link']=ci_site_url().COMP_USERNAME;
+		$data['referral_link']=ci_site_url().$this->getCompUsernameSafe();
 	 	_adminLayout("marketing-tools-mgmt/view-referral-links",$data);
 	}
+
 	public function viewSocialMediaLinks()
 	{
 		$data=array();

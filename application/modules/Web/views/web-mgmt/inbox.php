@@ -113,7 +113,7 @@
                            if(!empty($msg->attachment))
                            {
                            ?>
-                           <a href="<?php echo ci_site_url();?>images/<?php echo $msg->attachment;?>" target="_blank">View Attachment</a>
+                           <a href="<?php echo ci_site_url();?>uploads/images/<?php echo $msg->attachment;?>" target="_blank">View Attachment</a>
                            <?php    
                            } 
                            else 

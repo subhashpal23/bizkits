@@ -1,7 +1,4 @@
 <!-- breadcrumbs-area-start -->
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-
 
 <div class="breadcrumbs-area mb-70">
     <div class="container">
@@ -18,6 +15,7 @@
     </div>
 </div>
 <!-- breadcrumbs-area-end -->
+
 <!-- entry-header-area-start -->
 <div class="entry-header-area">
     <div class="container">
@@ -31,823 +29,492 @@
     </div>
 </div>
 <!-- entry-header-area-end -->
+
 <!-- my account wrapper start -->
 <div class="my-account-wrapper mb-70">
     <div class="container">
         <div class="section-bg-color">
             <div class="row">
                 <div class="col-lg-12">
-                    <!-- My Account Page Start -->
                     <div class="myaccount-page-wrapper">
-                        <!-- My Account Tab Menu Start -->
-
                         <div class="row">
                             <div class="col-lg-3 col-md-4">
                                 <?php echo $this->load->view('leftmenu');?>
                             </div>
-                            <!-- My Account Tab Menu End -->
 
-                            <!-- My Account Tab Content Start -->
                             <div class="col-lg-9 col-md-8">
                                 <div class="tab-content" id="myaccountContent">
-                                    
-                                    <!-- Single Tab Content Start -->
                                     <div class="tab-pane fade show active" id="orders" role="tabpanel">
+
                                         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
-<div class="card shadow-sm p-3">
+                                        <div class="card shadow-sm p-3">
 
-    <!-- Wallet Balance -->
-    <div class="d-flex align-items-center mb-3">
-        <i class="bi bi-wallet2 fs-2 text-primary me-2"></i>
-        <div>
-            <small class="text-muted">Wallet Balance</small>
-            <h5 class="mb-0">$ <span id="walletAmount"><?php echo ($wallet->amount)?$wallet->amount:0;?></span></h5>
-        </div>
-    </div>
+                                            <!-- Wallet Balance -->
+                                            <div class="d-flex align-items-center mb-3">
+                                                <i class="bi bi-wallet2 fs-2 text-primary me-2"></i>
+                                                <div>
+                                                    <small class="text-muted">Wallet Balance</small>
+                                                    <h5 class="mb-0">$ <span id="walletAmount"><?php echo (!empty($wallet) && isset($wallet->amount)) ? $wallet->amount : 0;?></span></h5>
+                                                </div>
+                                            </div>
 
-    <!-- Add Money Form -->
-    <div class="input-group mb-3">
-        <span class="input-group-text"><i class="bi bi-currency-dollor"></i>$</span>
-        <input type="number" class="form-control" id="addAmount" placeholder="Enter Amount">
-    </div>
+                                            <!-- Add Money Form -->
+                                            <div class="input-group mb-2">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" class="form-control" id="addAmount" placeholder="Enter Amount" min="1" step="1">
+                                            </div>
 
-    <button class="btn btn-primary w-100" onclick="addMoney()">
-        <i class="bi bi-plus-circle"></i> Add Money
-    </button>
+                                            <button type="button" class="btn btn-primary w-100" id="addMoneyBtn">
+                                                <i class="bi bi-plus-circle"></i> Add Money (PayPal)
+                                            </button>
 
-</div>
+                                            <div class="mt-3" id="paypal-button-container" style="display:none;"></div>
+
+                                            <small class="text-muted d-block mt-2">
+                                                Payment will be processed by PayPal and wallet will be credited after successful capture.
+                                            </small>
+
+                                        </div>
+
+                                        <!-- ✅ Wallet Topup History -->
+                                        <div class="card shadow-sm p-3 mt-4">
+                                            <h5 class="mb-3">Wallet Topup History</h5>
+
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-hover align-middle">
+                                                    <thead class="table-dark">
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>Payment ID</th>
+                                                            <th>Amount</th>
+                                                            <th>Status</th>
+                                                            <th>Date</th>
+                                                            <th>Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php if (!empty($wallet_topups)): $i = 1; foreach ($wallet_topups as $t): ?>
+                                                            <tr>
+                                                                <td><?= $i++; ?></td>
+                                                                <td><span class="badge bg-info"><?= !empty($t->paypal_capture_id) ? $t->paypal_capture_id : $t->paypal_order_id; ?></span></td>
+                                                                <td><b><?= currency(); ?><?= number_format((float)$t->amount, 2); ?></b> <small class="text-muted"><?= htmlspecialchars($t->currency ?? 'USD'); ?></small></td>
+                                                                <td>
+                                                                    <?php
+                                                                        $st = strtoupper($t->payment_status ?? '');
+                                                                        $cls = ($st === 'SUCCESS' || $st === 'COMPLETED') ? 'bg-success' : 'bg-secondary';
+                                                                    ?>
+                                                                    <span class="badge <?= $cls; ?>"><?= htmlspecialchars($t->payment_status ?? '--'); ?></span>
+                                                                </td>
+                                                                <td>
+                                                                    <?php
+                                                                        $dt = $t->payment_time ?: $t->created_at;
+                                                                        echo $dt ? date('d M Y h:i A', strtotime($dt)) : '--';
+                                                                    ?>
+                                                                </td>
+                                                                <td>
+                                                                    <button
+                                                                        type="button"
+                                                                        class="btn btn-sm btn-primary viewTopup"
+                                                                        data-topup='<?= htmlspecialchars(json_encode($t), ENT_QUOTES, 'UTF-8'); ?>'>
+                                                                        View
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; else: ?>
+                                                            <tr>
+                                                                <td colspan="6" class="text-center text-danger">No wallet topups found</td>
+                                                            </tr>
+                                                        <?php endif; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- ✅ Topup Details Modal -->
+                                        <div class="modal fade" id="topupModal" tabindex="-1">
+                                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                <div class="modal-content shadow">
+                                                    <div class="modal-header bg-primary text-white">
+                                                        <h5 class="modal-title">Wallet Topup Details</h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+
+                                                        <div class="row mb-3">
+                                                            <div class="col-md-6">
+                                                                <p><b>Payer:</b> <span id="t_payer_name"></span></p>
+                                                                <p><b>Email:</b> <span id="t_payer_email"></span></p>
+                                                                <p><b>Country:</b> <span id="t_payer_country"></span></p>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <p><b>PayPal Order ID:</b> <span id="t_order_id"></span></p>
+                                                                <p><b>Capture ID:</b> <span id="t_capture_id"></span></p>
+                                                                <p><b>Date:</b> <span id="t_date"></span></p>
+                                                            </div>
+                                                        </div>
+
+                                                        <hr>
+
+                                                        <div class="row mb-3">
+                                                            <div class="col-md-4">
+                                                                <div class="alert alert-success">
+                                                                    <b>Amount:</b><br>
+                                                                    <?= currency(); ?><span id="t_amount"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="alert alert-warning">
+                                                                    <b>PayPal Fee:</b><br>
+                                                                    <?= currency(); ?><span id="t_fee"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="alert alert-info">
+                                                                    <b>Net Amount:</b><br>
+                                                                    <?= currency(); ?><span id="t_net"></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <p><b>Status:</b> <span id="t_status"></span></p>
+                                                                <p><b>Currency:</b> <span id="t_currency"></span></p>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <p><b>Topup ID (DB):</b> <span id="t_id"></span></p>
+                                                            </div>
+                                                        </div>
+
+                                                        <hr>
+
+                                                        <h6>Raw PayPal Response</h6>
+                                                        <pre id="t_raw" style="max-height:250px; overflow:auto; background:#f8f9fa; padding:10px;"></pre>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                     </div>
-                                    
-
-                                   
-                                    
                                 </div>
-                            </div> <!-- My Account Tab Content End -->
+                            </div>
                         </div>
-                    </div> <!-- My Account Page End -->
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<div class="modal fade" id="requestModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
+<!-- my account wrapper end -->
 
-            <div class="modal-header">
-                <h5>Request Meeting</h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
+<!-- PayPal SDK (client-id should come from config ideally) -->
+<script src="https://www.paypal.com/sdk/js?client-id=Aa91_WNVYuVT8JDjxCpCKLWv0eJSIbVimPTVqG3GnwzdPiQ-2PX8VqfvPwyADCZ1VB6J6eFsWmMmVZRB&currency=USD"></script>
 
-            <div class="modal-body">
-                <form id="addEventForm">
-                    <!-- <input type="hidden1" id="expert_id" value=""> -->
-                    <select id="expert_id" class="form-control mb-2">
-                        <option value="">-- Select Expert --</option>
-                        <?php foreach ($experts as $e) { ?>
-                        <option value="<?= $e->user_id ?>">
-                            <?= $e->first_name ?> <?= $e->last_name ?> -
-                            <?= $e->email ?>
-                        </option>
-                        <?php } ?>
-                    </select>
-                    <!-- <input type="text" id="expert_id_name" readonly="" class="form-control mb-2"> -->
-                    <input type="text" id="req_title" class="form-control mb-2" placeholder="Meeting Title">
-
-                    <input type="date" id="req_date" class="form-control mb-2">
-
-                    <textarea id="req_message" class="form-control" placeholder="Message for expert"></textarea>
-                </form>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-success" onclick="sendRequest()">
-                    Send Request
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>
 <?php if ($this->session->flashdata('payment_success')):
-$pay = $this->session->flashdata('payment_success'); ?>
+    $pay = $this->session->flashdata('payment_success'); ?>
 
 <div class="modal fade" id="paymentSuccessModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg border-0">
 
-            <!-- HEADER -->
             <div class="modal-header text-white" style="background:linear-gradient(45deg,#28a745,#20c997)">
                 <h5 class="modal-title">
                     <i class="fa fa-check-circle"></i> Payment Successful
                 </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <!-- BODY -->
             <div class="modal-body text-center">
 
                 <div class="mb-3">
                     <i class="fa fa-check-circle text-success" style="font-size:60px;"></i>
                 </div>
 
-                <h4 class="text-success mb-2">Thank You for Your Order!</h4>
-                <p class="text-muted">Your payment has been received successfully.</p>
+                <h4 class="text-success mb-2">Wallet Credited Successfully!</h4>
+                <p class="text-muted">Your payment has been received and wallet has been updated.</p>
 
                 <hr>
 
                 <div class="row text-left">
                     <div class="col-6"><b>Order ID</b></div>
-                    <div class="col-6 text-right"><?= $pay['order_id']; ?></div>
+                    <div class="col-6 text-end" id="ps_order_id"><?= $pay['order_id']; ?></div>
 
                     <div class="col-6"><b>Payment ID</b></div>
-                    <div class="col-6 text-right text-primary"><?= $pay['payment_id']; ?></div>
+                    <div class="col-6 text-end text-primary" id="ps_payment_id"><?= $pay['payment_id']; ?></div>
 
                     <div class="col-6"><b>Amount Paid</b></div>
-                    <div class="col-6 text-right text-success"><?= currency() .$pay['amount']; ?></div>
+                    <div class="col-6 text-end text-success" id="ps_amount"><?= currency() . $pay['amount']; ?></div>
 
                     <div class="col-6"><b>Date & Time</b></div>
-                    <div class="col-6 text-right"><?= $pay['paid_at']; ?></div>
+                    <div class="col-6 text-end" id="ps_paid_at"><?= $pay['paid_at']; ?></div>
                 </div>
 
             </div>
 
-
-
         </div>
     </div>
 </div>
+
+<script>
+    window.addEventListener('load', function() {
+        try {
+            var el = document.getElementById('paymentSuccessModal');
+            if (el && window.bootstrap) {
+                new bootstrap.Modal(el).show();
+            }
+        } catch (e) {}
+    });
+</script>
 
 <?php endif; ?>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<!-- my account wrapper end -->
 <script>
-function addMoney(){
+(function() {
+    const addBtn = document.getElementById('addMoneyBtn');
+    const amountInput = document.getElementById('addAmount');
+    const walletAmountEl = document.getElementById('walletAmount');
+    const paypalContainer = document.getElementById('paypal-button-container');
 
-    var current = parseInt(document.getElementById('walletAmount').innerText);
-    var add = parseInt(document.getElementById('addAmount').value);
-
-    if(!add || add <= 0){
-        alert('Enter valid amount');
-        return;
+    function getAmount() {
+        const val = parseFloat(amountInput.value);
+        if (!val || val <= 0) return null;
+        return val.toFixed(2);
     }
 
-    document.getElementById('walletAmount').innerText = current + add;
-    document.getElementById('addAmount').value = '';
-
-}
-</script>
-
-<script>
-$(window).on('load', function() {
-    <?php if ($this->session->flashdata('payment_success')) { ?>
-    $('#paymentSuccessModal').modal('show');
-    <?php } ?>
-});
-</script>
-<script>
-document.addEventListener('click', function(e){
-    if(e.target.classList.contains('viewPayment')){
-
-        let data = JSON.parse(e.target.getAttribute('data-order'));
-
-        document.getElementById('m_name').innerText = data.payer_name;
-        document.getElementById('m_email').innerText = data.payer_email;
-        document.getElementById('m_country').innerText = data.payer_country;
-
-        document.getElementById('m_orderid').innerText = data.order_id;
-        document.getElementById('m_paymentid').innerText = data.paypal_capture_id;
-        document.getElementById('m_date').innerText = data.payment_time;
-
-        document.getElementById('m_amount').innerText = data.amount;
-        document.getElementById('m_fee').innerText = data.paypal_fee;
-        document.getElementById('m_net').innerText = data.net_amount;
-
-        // Products
-        let products = JSON.parse(data.order_details);
-        let list = document.getElementById('m_products');
-        list.innerHTML = '';
-
-        Object.values(products).forEach(p => {
-            let li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between';
-            li.innerHTML = `
-                <span>${p.product_name} (x${p.qty})</span>
-                <b>$${p.product_price}</b>
-            `;
-            list.appendChild(li);
-        });
-
-        new bootstrap.Modal(document.getElementById('paymentModal')).show();
+    function setLoading(isLoading) {
+        addBtn.disabled = isLoading;
+        addBtn.innerText = isLoading ? 'Please wait...' : 'Add Money (PayPal)';
     }
-});
-</script>
 
-<script>
-$(document).on('click', '.viewPayment', function() {
+    function resetPaypalUI() {
+        // remove/hide PayPal buttons after completion/cancel so they don't stay on screen
+        try {
+            paypalContainer.innerHTML = '';
+        } catch (e) {}
+        paypalContainer.style.display = 'none';
+        setLoading(false);
+    }
 
-    let name = $(this).data('name');
-    let amount = $(this).data('amount');
-    let paymentid = $(this).data('paymentid');
+    function renderButtons() {
+        // Always re-render for each new topup so UI stays clean and amount can change.
+        paypalContainer.innerHTML = '';
 
-    $('#m_name').text(name);
-    $('#m_amount').text(amount);
-    $('#m_paymentid').text(paymentid);
-
-    $('#paymentModal').modal('show');
-});
-</script>
-<!-- <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            var today = new Date();
-            var todayStr = today.toISOString().split('T')[0];
-
-            var eventsData = [{
-                    title: 'Meeting',
-                    start: '2026-01-10',
-                    description: 'Office meeting at 10 AM'
-                },
-                {
-                    title: 'Birthday',
-                    start: '2026-01-15',
-                    description: 'Neeraj Birthday Party 🎉'
-                },
-                {
-                    title: 'Project Deadline',
-                    start: '2026-01-20',
-                    description: 'Final project submission'
+        paypal.Buttons({
+            createOrder: function() {
+                const amount = getAmount();
+                if (!amount) {
+                    alert('Enter valid amount');
+                    return;
                 }
-            ];
 
-            var calendarEl = document.getElementById('calendar');
-
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                events: eventsData,
-
-                dateClick: function(info) {
-                    document.getElementById('title').innerText = 'Selected Date';
-                    document.getElementById('date').innerText = info.dateStr;
-                    document.getElementById('desc').innerText = 'No event selected';
-                },
-
-                eventClick: function(info) {
-                    document.getElementById('title').innerText = info.event.title;
-                    document.getElementById('date').innerText =
-                        info.event.start.toDateString();
-                    document.getElementById('desc').innerText =
-                        info.event.extendedProps.description;
-                }
-            });
-
-            calendar.render();
-
-            // 🔥 TODAY AUTO SHOW LOGIC
-            var todayEvent = eventsData.find(e => e.start === todayStr);
-
-            if (todayEvent) {
-                document.getElementById('title').innerText = todayEvent.title;
-                document.getElementById('date').innerText = today.toDateString();
-                document.getElementById('desc').innerText = todayEvent.description;
-            } else {
-                document.getElementById('title').innerText = 'Today';
-                document.getElementById('date').innerText = today.toDateString();
-                document.getElementById('desc').innerText = 'Aaj koi event nahi hai';
-            }
-        });
-    </script> -->
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-
-    var addModal = new bootstrap.Modal(document.getElementById('addEventModal'));
-
-    let allEvents = [];
-
-    var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-        initialView: 'dayGridMonth',
-
-        events: function(fetchInfo, successCallback) {
-            fetch("<?= base_url('calendar/fetch_events') ?>")
+                setLoading(true);
+                return fetch("<?= base_url('web/paypal_wallet_create_order'); ?>", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amount, currency: 'USD' })
+                })
                 .then(res => res.json())
                 .then(data => {
-                    allEvents = data; // sab events store
-                    successCallback(data); // calendar load
+                    setLoading(false);
+                    if (!data || !data.id) {
+                        throw new Error('PayPal order create failed');
+                    }
+                    return data.id;
+                })
+                .catch(err => {
+                    setLoading(false);
+                    console.error(err);
+                    alert(err.message || 'PayPal create order error');
                 });
-        },
-
-
-        // 📅 DATE CLICK
-        dateClick: function(info) {
-
-            let selectedDate = info.dateStr;
-
-            let filtered = allEvents.filter(ev => ev.start === selectedDate);
-
-            document.getElementById('date').innerText = selectedDate;
-
-            if (filtered.length > 0) {
-
-                document.getElementById('title').innerText = 'Events';
-                let descHtml = '';
-
-                filtered.forEach(ev => {
-                    descHtml += `
-                       <div class="border p-2 mb-2 rounded">
-                            <b>${ev.title}</b><br>
-                            ${ev.description}<br>
-
-                            <button 
-                                class="btn btn-sm btn-warning mt-1"
-                                onclick="editEvent(${ev.id})">
-                                Edit
-                            </button>
-
-                            <button 
-                                class="btn btn-sm btn-danger mt-1"
-                                onclick="deleteEvent(${ev.id})">
-                                Delete
-                            </button>
-                        </div>
-                    `;
-                });
-
-                document.getElementById('desc').innerHTML = descHtml;
-
-            } else {
-
-                document.getElementById('title').innerText = 'No Event';
-                // document.getElementById('desc').innerText = 'Is date par koi event nahi hai';
-            }
-        }
-    });
-
-    calendar.render();
-
-    // ➕ OPEN ADD MODAL
-    $('#addEventBtn').click(function() {
-        $('#saveAddEvent').text('Submit');
-
-        $('#add_title,#add_description,#add_date,#event_id').val('');
-        addModal.show();
-    });
-
-    // 💾 SAVE ADD EVENT
-    $('#saveAddEvent').off('click').on('click', function() {
-
-        let id = $('#event_id').val();
-        let title = $('#add_title').val().trim();
-        let description = $('#add_description').val().trim();
-        let event_date = $('#add_date').val();
-        let user_id = $('#add_user_id').val();
-
-        if (title === '' || description === '' || event_date === '') {
-            alert('All fields are required');
-            return;
-        }
-
-        $.post("<?= base_url('calendar/save_event') ?>", {
-            id: id, // 👈 empty = add | value = edit
-            title: title,
-            description: description,
-            event_date: event_date,
-            user_id: user_id
-        }, function() {
-
-            calendar.refetchEvents();
-            addModal.hide();
-            resetForm();
-
-        }, 'json');
-    });
-
-    window.editEvent = function(id) {
-
-        $.get("<?= base_url('calendar/get_event/') ?>" + id, function(res) {
-
-            if (!res.status) {
-                alert('Event not found');
-                return;
-            }
-
-            let ev = res.data;
-
-            $('#event_id').val(ev.id);
-            $('#add_title').val(ev.title);
-            $('#add_description').val(ev.description);
-            $('#add_date').val(ev.event_date);
-            $('#add_user_id').val(ev.user_id);
-
-            $('#saveAddEvent').text('Update Event');
-
-            addModal.show();
-
-        }, 'json');
-    }
-    window.deleteEvent = function(id) {
-
-        if (!confirm('Are you sure you want to delete this event?')) {
-            return;
-        }
-
-        $.ajax({
-            url: "<?= base_url('calendar/delete_event/') ?>" + id,
-            type: "POST",
-            dataType: "json",
-            success: function(res) {
-
-                if (res.status) {
-
-                    calendar.refetchEvents();
-
-                    // infoBox reset
-                    $('#title').text('Select Date');
-                    $('#date').text('');
-                    $('#desc').html('');
-
-                } else {
-                    alert(res.msg || 'Delete failed');
-                }
-            }
-        });
-    }
-
-
-    // 💾 UPDATE EVENT
-    $('#saveEditEvent').click(function() {
-        $.post("<?= base_url('calendar/save_event') ?>", {
-            id: $('#edit_event_id').val(),
-            title: $('#edit_title').val(),
-            description: $('#edit_description').val(),
-            event_date: $('#edit_date').val(),
-            user_id: $('#edit_user_id').val()
-        }, function() {
-            calendar.refetchEvents();
-            addModal.hide();
-        });
-    });
-
-});
-</script>
-<!-- <script>
-    let calendar_customer;
-    let allEvents = [];
-    let selectedDateGlobal = '';
-
-    document.addEventListener('DOMContentLoaded', function() {
-
-        let customerCalendar;
-
-        document.addEventListener('DOMContentLoaded', function() {
-
-            customerCalendar = new FullCalendar.Calendar(
-                document.getElementById('customerCalendar'), {
-                    initialView: 'dayGridMonth',
-
-                    events: "<?= base_url('calendar/customer_calendar_events') ?>",
-
-                    dateClick: function(info) {
-                        $('#req_date').val(info.dateStr);
-                        openAddModal();
-                    }
-                });
-
-            customerCalendar.render();
-        });
-
-        calendar_customer = new FullCalendar.Calendar(
-            document.getElementById('calendar_customer'), {
-                initialView: 'dayGridMonth',
-                selectable: true,
-                editable: false,
-
-                /* =========================
-                   LOAD EVENTS
-                ========================= */
-                events: function(fetchInfo, successCallback) {
-
-                    let expertId = document.getElementById('expertSelect').value;
-
-                    if (!expertId) {
-                        successCallback([]);
-                        return;
-                    }
-
-                    fetch("<?= base_url('calendar/get_expert_events/') ?>" + expertId)
-                        .then(res => res.json())
-                        .then(data => {
-                            allEvents = data;
-                            successCallback(data);
-                        });
-                },
-
-                /* =========================
-                   EVENT COLOR & LABEL
-                ========================= */
-                eventDidMount: function(info) {
-
-                    let ev = info.event.extendedProps;
-
-                    // 🟢 My booking
-                    if (ev.is_my_booking) {
-                        info.el.style.backgroundColor = '#198754';
-                        info.el.style.borderColor = '#198754';
-                        info.el.title = 'Booked by you';
-                    }
-                    // 🔴 Booked by others
-                    else if (ev.booked_by) {
-                        info.el.style.backgroundColor = '#dc3545';
-                        info.el.style.borderColor = '#dc3545';
-                        info.el.title = 'Already booked';
-                    }
-                    // 🔵 Available
-                    else {
-                        info.el.style.backgroundColor = '#0d6efd';
-                        info.el.style.borderColor = '#0d6efd';
-                        info.el.title = 'Available';
-                    }
-                },
-
-                /* =========================
-                   DATE CLICK
-                ========================= */
-                dateClick: function(info) {
-                    selectedDateGlobal = info.dateStr;
-                    refreshRightPanel();
-                }
-            }
-        );
-
-        calendar_customer.render();
-
-        /* =========================
-           EXPERT CHANGE
-        ========================= */
-        document.getElementById('expertSelect').addEventListener('change', function() {
-            calendar_customer.refetchEvents();
-            document.getElementById('titleExpert').innerText = 'Select Date';
-            document.getElementById('dateExpert').innerText = '';
-            document.getElementById('descExpert').innerHTML = '';
-            selectedDateGlobal = '';
-        });
-    });
-
-    /* =========================
-       RIGHT PANEL REFRESH
-    ========================= */
-    function refreshRightPanel() {
-
-        if (!selectedDateGlobal) return;
-
-        document.getElementById('dateExpert').innerText = selectedDateGlobal;
-
-        let filtered = allEvents.filter(ev => ev.start === selectedDateGlobal);
-
-        if (filtered.length > 0) {
-
-            document.getElementById('titleExpert').innerText = 'Events';
-
-            let descHtml = '';
-
-            filtered.forEach(ev => {
-
-                let desc = ev.description ? ev.description : 'No description';
-                let btnHtml = '';
-
-                if (!ev.booked_by) {
-
-                    btnHtml = `
-                    <button class="btn btn-sm btn-success mt-1"
-                        onclick="bookEvent(${ev.id})">
-                        Book Now
-                    </button>
-                `;
-
-                } else if (ev.is_my_booking) {
-
-                    btnHtml = `
-                    <button class="btn btn-sm btn-danger mt-1"
-                        onclick="cancelBooking(${ev.id})">
-                        Cancel Booking
-                    </button>
-                `;
-
-                } else {
-
-                    btnHtml = `
-                    <button class="btn btn-sm btn-secondary mt-1" disabled>
-                        Booked
-                    </button>
-                `;
-                }
-
-                descHtml += `
-                <div class="border p-2 mb-2 rounded">
-                    <b>${ev.title}</b><br>
-                    ${desc}<br>
-                    ${btnHtml}
-                </div>
-            `;
-            });
-
-            document.getElementById('descExpert').innerHTML = descHtml;
-
-        } else {
-
-            document.getElementById('titleExpert').innerText = 'No Event';
-            document.getElementById('descExpert').innerHTML =
-                '<span class="text-muted">Is date par koi event nahi hai</span>';
-        }
-    }
-
-    /* =========================
-       BOOK EVENT
-    ========================= */
-    function bookEvent(eventId) {
-
-        $.post("<?= base_url('calendar/book_event') ?>", {
-            event_id: eventId
-        }, function(res) {
-
-            let r = JSON.parse(res);
-            alert(r.msg);
-
-            calendar_customer.refetchEvents();
-
-            setTimeout(() => {
-                refreshRightPanel();
-            }, 300);
-        });
-    }
-
-    /* =========================
-       CANCEL BOOKING
-    ========================= */
-    function cancelBooking(eventId) {
-
-        if (!confirm('Are you sure you want to cancel booking?')) return;
-
-        $.post("<?= base_url('calendar/cancel_booking') ?>", {
-            event_id: eventId
-        }, function(res) {
-
-            let r = JSON.parse(res);
-            alert(r.msg);
-
-            calendar_customer.refetchEvents();
-
-            setTimeout(() => {
-                refreshRightPanel();
-            }, 300);
-        });
-    }
-</script> -->
-<script>
-let customerCalendar;
-let allEvents = [];
-
-document.addEventListener('DOMContentLoaded', function() {
-
-    customerCalendar = new FullCalendar.Calendar(
-        document.getElementById('customerCalendar'), {
-            initialView: 'dayGridMonth',
-
-            events: function(fetchInfo, successCallback) {
-                fetch("<?= base_url('calendar/customer_calendar_events') ?>")
-                    .then(res => res.json())
-                    .then(data => {
-                        allEvents = data;
-                        successCallback(data);
-                    });
             },
 
-            // 👉 Date click = show data (NO modal)
-            dateClick: function(info) {
+            onApprove: function(data) {
+                setLoading(true);
+                return fetch("<?= base_url('web/paypal_wallet_capture_order/'); ?>" + data.orderID, {
+                    method: 'POST'
+                })
+                .then(res => res.json())
+                .then(resp => {
+                    if (!resp || resp.status !== true) {
+                        throw new Error((resp && resp.message) ? resp.message : 'Capture failed');
+                    }
 
-                let selectedDate = info.dateStr;
-                $('#date').text(selectedDate);
+                    // Update wallet amount from server
+                    if (resp.balance !== undefined && resp.balance !== null) {
+                        walletAmountEl.innerText = parseFloat(resp.balance).toFixed(2);
+                    }
 
-                let filtered = allEvents.filter(ev => ev.start === selectedDate);
-
-                if (filtered.length > 0) {
-
-                    $('#title').text('Your Meeting');
-
-                    let html = '';
-                    filtered.forEach(ev => {
-                        html += `
-                        <div class="border p-2 mb-2 rounded">
-                            <b>${ev.title}</b><br>
-                            <small>${ev.message ?? ''}</small><br>
-                            ${ev.meet_link ?? ''}
-                        </div>`;
+                    amountInput.value = '';
+                    showSuccessModal({
+                        order_id: resp.order_id,
+                        payment_id: resp.payment_id,
+                        amount: resp.amount,
+                        paid_at: resp.paid_at
                     });
 
-                    $('#desc').html(html);
+                    // ✅ Remove the PayPal buttons after success
+                    resetPaypalUI();
+                })
+                .catch(err => {
+                    setLoading(false);
+                    console.error(err);
+                    alert(err.message || 'PayPal capture error');
+                });
+            },
 
-                } else {
-                    $('#title').text('No Meeting');
-                    $('#desc').html(
-                        '<span class="text-muted">There are no meetings scheduled for this date.</span>'
-                    );
-                }
+            onCancel: function(data) {
+                // Store cancelled attempt
+                try {
+                    const amount = getAmount();
+                    fetch("<?= base_url('web/paypal_wallet_cancel'); ?>", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            orderID: data && data.orderID ? data.orderID : null,
+                            amount: amount,
+                            currency: 'USD',
+                            reason: 'USER_CANCELLED'
+                        })
+                    }).catch(() => {});
+                } catch (e) {}
+
+                alert('Payment cancelled');
+                resetPaypalUI();
+            },
+
+            onError: function(err) {
+                // Store failed attempt (optional but useful)
+                try {
+                    const amount = getAmount();
+                    fetch("<?= base_url('web/paypal_wallet_cancel'); ?>", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            orderID: null,
+                            amount: amount,
+                            currency: 'USD',
+                            reason: (err && err.message) ? err.message : 'PAYPAL_ERROR'
+                        })
+                    }).catch(() => {});
+                } catch (e) {}
+
+                console.error(err);
+                alert('Payment error');
+                resetPaypalUI();
             }
-        }
-    );
-
-    customerCalendar.render();
-});
-
-// 👉 Add Event button se modal open
-function openRequestModal(v,n) {
-    $('#addEventForm')[0].reset();
-    $('#requestModal').modal('show');
-    $('#expert_id').val(v);
-    //$('#expert_id_name').val(n);
-    //document.getElementById('expert_id').value = v;
-}
-
-// 👉 Send meeting request
-function sendRequest() {
-
-    let expert_id = $('#expert_id').val();
-    let title = $('#req_title').val();
-    let date = $('#req_date').val();
-    let message = $('#req_message').val();
-
-    if (!expert_id || !title || !date) {
-        alert('All fields are required');
-        return;
+        }).render('#paypal-button-container');
     }
 
-    $.ajax({
-        url: "<?= base_url('meeting/send_request') ?>",
-        type: "POST",
-        dataType: "json",
-        data: {
-            expert_id: expert_id,
-            title: title,
-            date: date,
-            message: message
-        },
-        success: function(res) {
+    function showSuccessModal(details) {
+        try {
+            var el = document.getElementById('paymentSuccessModal');
 
-            if (res.status) {
-                $('#requestModal').modal('hide');
-                alert(res.msg);
-                window.location.href='sessions';
-                // ✅ Calendar auto refresh
-                customerCalendar.refetchEvents();
+            // If modal markup not present (no flashdata), create a minimal one dynamically.
+            if (!el) {
+                var wrap = document.createElement('div');
+                wrap.innerHTML = `
+<div class="modal fade" id="paymentSuccessModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header text-white" style="background:linear-gradient(45deg,#28a745,#20c997)">
+        <h5 class="modal-title"><i class="fa fa-check-circle"></i> Payment Successful</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="mb-3"><i class="fa fa-check-circle text-success" style="font-size:60px;"></i></div>
+        <h4 class="text-success mb-2">Wallet Credited Successfully!</h4>
+        <p class="text-muted">Your payment has been received and wallet has been updated.</p>
+        <hr>
+        <div class="row text-left">
+          <div class="col-6"><b>Order ID</b></div>
+          <div class="col-6 text-end" id="ps_order_id"></div>
+          <div class="col-6"><b>Payment ID</b></div>
+          <div class="col-6 text-end text-primary" id="ps_payment_id"></div>
+          <div class="col-6"><b>Amount Paid</b></div>
+          <div class="col-6 text-end text-success" id="ps_amount"></div>
+          <div class="col-6"><b>Date & Time</b></div>
+          <div class="col-6 text-end" id="ps_paid_at"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+                document.body.appendChild(wrap.firstElementChild);
+                el = document.getElementById('paymentSuccessModal');
             }
+
+            if (details) {
+                const orderId = details.order_id || 'WALLET_TOPUP';
+                const paymentId = details.payment_id || '';
+                const amount = details.amount || '';
+                const paidAt = details.paid_at || '';
+
+                const o = document.getElementById('ps_order_id');
+                const p = document.getElementById('ps_payment_id');
+                const a = document.getElementById('ps_amount');
+                const t = document.getElementById('ps_paid_at');
+
+                if (o) o.innerText = orderId;
+                if (p) p.innerText = paymentId;
+                if (a) a.innerText = amount;
+                if (t) t.innerText = paidAt;
+            }
+
+            if (window.bootstrap && el) {
+                new bootstrap.Modal(el).show();
+            }
+        } catch (e) {
+            // fallback
         }
+    }
+
+    addBtn.addEventListener('click', function() {
+        const amount = getAmount();
+        if (!amount) {
+            alert('Enter valid amount');
+            return;
+        }
+
+        paypalContainer.style.display = 'block';
+        renderButtons();
     });
-}
+})();
 </script>
 
-<!-- Simple About Modal -->
-<div class="modal fade" id="aboutModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">About <span id="expertName"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <img src="" id="experrtImage" style="width:100px; height: 100px; border-radius: 100%">
-                <p id="expertEmail"></p>
-                <p id="expertAddress"></p>
-                
-                <p id="expertAbout"></p>
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var aboutModal = document.getElementById('aboutModal');
-    
-    aboutModal.addEventListener('shown.bs.modal', function(event) {
-        var button = event.relatedTarget;
-        
-        var name = button.getAttribute('data-name');
-        var email = button.getAttribute('data-email');
-        var address = button.getAttribute('data-address');
-        var about = button.getAttribute('data-about');
-        //alert(name+about)
-        document.getElementById('expertName').textContent = "Name:"+name;
-        document.getElementById('expertEmail').textContent = "Email:"+email;
-        document.getElementById('expertAddress').textContent = "Address:"+address;
-        document.getElementById('expertAbout').textContent = about;
-        document.getElementById('expertImage').src = image;
-    });
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('viewTopup')) {
+        let t = JSON.parse(e.target.getAttribute('data-topup'));
+
+        document.getElementById('t_id').innerText = t.id ?? '';
+        document.getElementById('t_payer_name').innerText = t.payer_name ?? '--';
+        document.getElementById('t_payer_email').innerText = t.payer_email ?? '--';
+        document.getElementById('t_payer_country').innerText = t.payer_country ?? '--';
+
+        document.getElementById('t_order_id').innerText = t.paypal_order_id ?? '--';
+        document.getElementById('t_capture_id').innerText = t.paypal_capture_id ?? '--';
+
+        const d = (t.payment_time || t.created_at);
+        document.getElementById('t_date').innerText = d ? d : '--';
+
+        document.getElementById('t_amount').innerText = t.amount ?? '0.00';
+        document.getElementById('t_fee').innerText = t.paypal_fee ?? '0.00';
+        document.getElementById('t_net').innerText = t.net_amount ?? '0.00';
+
+        document.getElementById('t_status').innerText = t.payment_status ?? '--';
+        document.getElementById('t_currency').innerText = t.currency ?? 'USD';
+
+        let raw = t.paypal_response;
+        try {
+            if (typeof raw === 'string') {
+                raw = JSON.parse(raw);
+            }
+        } catch (err) {}
+        document.getElementById('t_raw').innerText = (typeof raw === 'object') ? JSON.stringify(raw, null, 2) : (raw ?? '');
+
+        new bootstrap.Modal(document.getElementById('topupModal')).show();
+    }
 });
 </script>
