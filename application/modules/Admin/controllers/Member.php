@@ -118,6 +118,48 @@ class Member extends Common_Controller
 	    $data=array();
 	    _adminLayout("member-mgmt/push-commission",$data);
 	}*/
+	public function loginAs($user_id)
+	{
+		admin_auth();
+		$user_id = ID_decode($user_id);
+		// print_r($user_id);exit;
+		$user = $this->db->select('user_id, username, password, active_status')
+			->from('user_login')
+			->where('user_id', $user_id)
+			->get()
+			->row();
+		// print_r($user);exit;
+		if (empty($user) || empty($user->user_id)) {
+			$this->session->set_flashdata('error_msg', 'User not found');
+			redirect(ci_site_url().'Admin/Expert/viewAllMember');
+			return;
+		}
+
+		
+
+		// Save admin session so we can restore it later
+		if (!$this->session->userdata('impersonator')) {
+			$this->session->set_userdata('impersonator', $this->session->userdata());
+		}
+
+		// Build a minimal user session similar to normal login
+		$userdata = array(
+			'username' => $user->username,
+			'password' => $user->password,
+			'userType' => $user->userType,
+			'auth_affiliate' => TRUE,
+			'SD_User_Name' => $user->username,
+			'user_id' => $user->user_id,
+			'userpanel_user_id' => $user->user_id,
+			'impersonating' => TRUE,
+		);
+
+		$this->session->set_userdata($userdata);
+		$this->db->update('user_registration', array('current_login_status' => '1'), array('user_id' => $user->user_id));
+
+		// Redirect to user/expert dashboard (common front/user landing)
+		redirect(site_url().'Web/dashboard');
+	}
 	public function generateUniqueOrderId()
 	{
 	    $random_number="OR".mt_rand(100000, 999999);

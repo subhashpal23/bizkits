@@ -121,4 +121,73 @@ class Admin extends Common_Controller
 	    $this->session->set_flashdata('success','Document '.$type.' Successfully');
 	    redirect(base_url()."Admin/allDocuments"); exit;
 	}
+	public function request_calendar_events_ex()
+    {
+        $customer_id = $this->session->userdata('user_id');
+
+        $events = $this->db->get('customer_meeting_requests')->result();
+
+        $data = [];
+
+        foreach ($events as $e) {
+			$customerUser= $this->db->select('username')->from('user_registration')->where('user_id',$e->customer_id)->get()->row();
+			$expertUser= $this->db->select('username')->from('user_registration')->where('user_id',$e->expert_id)->get()->row();
+
+            // 🎨 Status wise color
+            $color = '#f0ad4e'; // pending
+            if ($e->status == 'approved') {
+                $color = '#5cb85c';
+            }
+            if ($e->status == 'rejected') {
+                $color = '#d9534f';
+            }
+            $meetBtn = '';
+            if ($e->status == 'approved' && !empty($e->meet_link)) {
+                $meetBtn =
+                    '
+                <a href="' .
+                    $e->meet_link .
+                    '" 
+                   target="_blank" 
+                   class="btn btn-success  mt-2">
+                   Join Meet
+                </a>
+            ';
+            }
+
+            $data[] = [
+                'id' => $e->id,
+				'customer_username' => $customerUser->username ?? 'N/A',
+				'expert_username' => $expertUser->username ?? 'N/A',
+                // 👇 Calendar title	
+                'title' => $e->title . ' (' . ucfirst($e->status) . ')',
+
+                // 👇 Calendar date
+                'start' => $e->requested_date,
+
+                // 👇 Calendar color
+                'color' => $color,
+
+                // 👇 EXTRA DATA (date click me use hoga)
+                'status' => match ($e->status) {
+						'approved' => '<span class="badge badge-success">Approved</span>',
+						'pending'  => '<span class="badge badge-warning">Pending</span>',
+						'rejected' => '<span class="badge badge-danger">Rejected</span>',
+						default    => '<span class="badge badge-secondary">Unknown</span>',
+					},
+
+                'message' => $e->message,
+                'meet_link' => $meetBtn,
+            ];
+        }
+
+        echo json_encode($data);
+    }
+	public function paymentDetails()
+	{
+	    $data=array();
+	    $payment_details=$this->db->from('payment_paypal as p')->join('user_registration as u','u.user_id=p.user_id','left')->get()->result();
+	    $data['payment_details']=$payment_details;
+	    _adminLayout("payment-details",$data);
+	}
 }//end class

@@ -18,106 +18,68 @@ class Expert extends Common_Controller
 		$this->perPage = 100;
 	}//end constructor 
 	
-	
-	/*public function pushCommission()
+	/**
+	 * Admin impersonation: login as an expert and redirect to their dashboard.
+	 * Stores current admin session to allow returning back.
+	 */
+	public function loginAs($user_id)
 	{
-	    if(!empty($this->input->post('submit')))
-	    {
-	        $sponsor_name=$this->input->post('sponsor_name');
-	        $downline_name=$this->input->post('downline_name');
-	        // check sponsor is valid or not
-	        $counts=$this->db->select('id')->from('user_registration')->where('username',$sponsor_name)->or_where('user_id',$sponsor_name)->get()->num_rows();
-	        $countd=$this->db->select('id')->from('user_registration')->where('username',$downline_name)->or_where('user_id',$downline_name)->get()->num_rows();
-	        if($countd)
-	        {
-	            $infod=$this->db->select('*')->from('user_registration')->where('username',$downline_name)->or_where('user_id',$downline_name)->get()->row();
-	            $user_id=$infod->user_id;
-	            $pkg_amount=$infod->pkg_amount;
-	            $pkg_id=$infod->pkg_id;
-	            if($counts)
-    	        {
-    	            $infos=$this->db->select('user_id')->from('user_registration')->where('username',$sponsor_name)->or_where('user_id',$sponsor_name)->get()->row();
-    	            $sponser_id=$infos->user_id;
-    	            // check ref is of this user or not
-    	            $checkr=$this->db->select('user_id')->from('user_registration')->where(array('user_id'=>$user_id,'ref_id'=>$sponser_id))->get()->num_rows();
-    	            if($checkr)
-    	            {
-    	                //
-    	                $commission_info=$this->db->select('*')->from('direct_commission_meta')->where(array(
-                		'level'=>1
-                		))->get()->row();
-                		if(!empty($commission_info->type) && $commission_info->type>0)
-                		{
-                		    $commission_per=$commission_info->commission;
-                		    $commission_amount=($pkg_amount*$commission_per)/100;
-                		    $ttype="Referral Bonus";
-                		    $TranDescription=$ttype.' via Package Purchase by '.$user_id;
-                		}
-                		else
-                		{
-                		    $commission_amount=$commission_info->commission;
-                		    $ttype="Referral Bonus";
-                		    $TranDescription=$ttype.' via Package Purchase by '.$user_id;
-                		}
-                		
-                		//echo $sponser_id.",".$user_id.",".$pkg_id.",".$pkg_amount;
-                		//echo $commission_amount; exit;
-                		if(!empty($commission_amount) && $commission_amount>0)
-                		{
-                		    $query_obj=$this->db->select('amount')->from('final_e_wallet')->where(array('user_id'=>$sponser_id,'wallet_type'=>'main','wallet_type_id'=>1))->get()->row();
-                			$balance=$query_obj->amount+$commission_amount;
-                			$this->db->update('final_e_wallet',array('amount'=>$balance),array('user_id'=>$sponser_id,'wallet_type'=>'main','wallet_type_id'=>1));
-                			$this->db->insert('credit_debit',array(
-                			    'transaction_no'=>generateUniqueTranNo(),
-                			    'user_id'=>$sponser_id,
-                			    'credit_amt'=>$commission_amount,
-                			    'debit_amt'=>'0',
-                			    'balance'=>$balance,
-                			    'receiver_id'=>$sponser_id,
-                				'pkg_id'=>$pkg_id,
-                				'pkg_amount'=>$pkg_amount,
-                			    'sender_id'=>$user_id,
-                			    'receive_date'=>date('Y-m-d'),
-                			    'ttype'=>$ttype,
-                			    'TranDescription'=>$TranDescription,
-                			    'Cause'=>$TranDescription,
-                			    'Remark'=>$TranDescription,
-                			    'product_name'=>'main',
-                			    'deposit_id'=>1,
-                			    'status'=>'1',
-                			    'level'=>'1',
-                			    'ewallet_used_by'=>'Withdrawal Wallet',
-                			    'current_url'=>site_url(),
-                			    'reason'=>'5' //credit for matrix direct commission
-                		        ));
-                		}//end commission not empty if
-                		
-                	
-    	                $this->session->set_flashdata('flash_msg','Referal Bonus paid successfully');
-	                    redirect(base_url()."Admin/Member/pushCommission");
-    	            
-    	            }
-    	            else
-    	            {
-    	                $this->session->set_flashdata('error_msg','Wrong Sponsor');
-	                    redirect(base_url()."Admin/Member/pushCommission");
-    	            }
-    	        }
-    	        else
-    	            {
-    	                $this->session->set_flashdata('error_msg','Sponsor not found');
-	                    redirect(base_url()."Admin/Member/pushCommission");
-    	            }
-	        }
-	        else
-    	            {
-    	                $this->session->set_flashdata('error_msg','Downline not found');
-	                    redirect(base_url()."Admin/Member/pushCommission");
-    	            }
-	    }
-	    $data=array();
-	    _adminLayout("member-mgmt/push-commission",$data);
-	}*/
+		admin_auth();
+		$user_id = ID_decode($user_id);
+		// print_r($user_id);exit;
+		$user = $this->db->select('user_id, username, password, active_status')
+			->from('user_login')
+			->where('user_id', $user_id)
+			->get()
+			->row();
+		// print_r($user);exit;
+		if (empty($user) || empty($user->user_id)) {
+			$this->session->set_flashdata('error_msg', 'User not found');
+			redirect(ci_site_url().'Admin/Expert/viewAllMember');
+			return;
+		}
+
+		
+
+		// Save admin session so we can restore it later
+		if (!$this->session->userdata('impersonator')) {
+			$this->session->set_userdata('impersonator', $this->session->userdata());
+		}
+
+		// Build a minimal user session similar to normal login
+		$userdata = array(
+			'username' => $user->username,
+			'password' => $user->password,
+			'userType' => $user->userType,
+			'auth_affiliate' => TRUE,
+			'SD_User_Name' => $user->username,
+			'user_id' => $user->user_id,
+			'userpanel_user_id' => $user->user_id,
+			'impersonating' => TRUE,
+		);
+
+		$this->session->set_userdata($userdata);
+		$this->db->update('user_registration', array('current_login_status' => '1'), array('user_id' => $user->user_id));
+
+		// Redirect to user/expert dashboard (common front/user landing)
+		redirect(site_url().'Web/dashboard');
+	}
+
+	/**
+	 * Restore admin session after impersonation.
+	 */
+	public function stopImpersonation()
+	{
+		$impersonator = $this->session->userdata('impersonator');
+		if (!empty($impersonator) && is_array($impersonator)) {
+			// Clear current session and restore original
+			$this->session->sess_destroy();
+			$this->session->sess_create();
+			$this->session->set_userdata($impersonator);
+		}
+		redirect(ci_site_url().'Admin/Expert/viewAllMember');
+	}
+	
 	public function generateUniqueOrderId()
 	{
 	    $random_number="OR".mt_rand(100000, 999999);

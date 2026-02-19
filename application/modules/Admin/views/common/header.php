@@ -303,6 +303,12 @@ if($admin->type=='sub_admin' && ($_SERVER['REQUEST_URI']=='/Admin' || $_SERVER['
                      <li class="nav-item"><a href="<?php echo ci_site_url();?>Admin/MessagePanel/sentMessage" class="nav-link"><i class="fas fa-angle-right"></i>Sent Message</a></li>
                   </ul>
                </li>
+			   <!-- <li class="nav-item sidebar-nav-item">
+                  <a href="#" class="nav-link"><i class="fas fa-angle-right"></i> <span>Payment</span></a>
+                  <ul class="nav sub-group-menu">
+                     <li class="nav-item"><a href="<?php echo ci_site_url();?>Admin/paymentDetails" class="nav-link"><i class="fas fa-angle-right"></i>Payment</a></li>
+                  </ul>
+               </li> -->
                
 			   <!-- <li class="nav-item sidebar-nav-item">
                   <a href="#" class="nav-link"><i class="fas fa-angle-right"></i> <span>Google Meet</span></a>
@@ -328,6 +334,11 @@ if($admin->type=='sub_admin' && ($_SERVER['REQUEST_URI']=='/Admin' || $_SERVER['
                      
                   </ul>
                </li>-->
+               <li class="nav-item">
+                  <a href="<?php echo ci_site_url();?>Admin/ReportName" class="nav-link">
+                      <i class="fas fa-chart-line"></i><span>Report</span>
+                  </a>
+              </li>
                <?php
                      }
                ?>

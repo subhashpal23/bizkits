@@ -94,12 +94,18 @@ class Web extends Common_Controller
                     'attachment'=>$attachment
                     ));
             $this->session->set_flashdata("flash_msg", '<span class="text-semibold">Well done!</span> Message is sent successfully');
-            redirect(ci_site_url() . "Web/sentMessage");
+            // stay on combined Messages page; open Sent tab after send
+            redirect(ci_site_url() . "Web/composeMessage?tab=sent");
             exit;
         }
         $data=array();
         $data['all_active_members']=$this->member_model->getAllActiveMembers();
-				// print_r($data['all_active_members']); exit;
+
+        // NEW: for tabbed Messages page
+        $data['all_inbox_msg'] = $this->message_panel_model->getAllInboxMessage($login_user_id);
+        $data['all_sent_msg']  = $this->message_panel_model->getAllSentMessage($login_user_id);
+		$data['all_inbox_msg']=$this->message_panel_model->getAllInboxMessage($login_user_id);
+// print_r($data['all_sent_msg']);exit;
 
         _adminLayout("web-mgmt/compose-message",$data);
     }//end method
@@ -115,7 +121,7 @@ class Web extends Common_Controller
         $id=ID_decode($id);
         $this->db->delete("message",array('id'=>$id));
         $this->session->set_flashdata("flash_msg", '<span class="text-semibold">Well done!</span> Message is deleted successfully.');
-        redirect(ci_site_url() . "Web/sentMessage");
+        redirect(ci_site_url() . "Web/composeMessage?tab=sent");
         exit;
     }
     public function readMessage($message_id=null)
@@ -1425,7 +1431,7 @@ class Web extends Common_Controller
     public function billInvoice()
     {
 		// 
-        //pr($this->session->userdata()); exit;
+        // pr($this->session->userdata()); exit;
         $data = [];
         $user_id = $this->session->userdata('user_id');
         // print_r($this->session->userdata()); exit;
@@ -1890,17 +1896,7 @@ class Web extends Common_Controller
         }
         $user_id = $_SESSION['user_id'];
         $data['user'] = $this->front_model->get_user_by_id($user_id);
-        $data['orders'] = $this->db->select('*')->from('eshop_orders')->where('user_id', $user_id)->order_by('id', 'desc')->get()->result();
-        $data['products'] = $this->db->select('*')->from('eshop_products')->order_by('id', 'desc')->get()->result();
-        $data['latesorders'] = $this->db
-            ->select('*')
-            ->from('eshop_orders')
-            ->where(['user_id' => $user_id, 'DATE(order_date)' => date('Y-m-d')])
-            ->order_by('id', 'desc')
-            ->get()
-            ->result();
-        $data['customer_count'] = $this->db->from('user_registration')->where('member_type', 2)->count_all_results();
-        $data['expert_count'] = $this->db->from('user_registration')->where('member_type', 1)->count_all_results();
+        
         $date['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
         $data['experts'] = $this->db
             ->select('*')
@@ -1916,16 +1912,10 @@ class Web extends Common_Controller
             ->get()
             ->result();
         $data['requests'] = $this->db->select('cmr.*, ur.first_name as customer_name')->from('customer_meeting_requests cmr')->join('user_registration ur', 'ur.user_id = cmr.expert_id')->where('cmr.expert_id', $user_id)->order_by('cmr.id', 'DESC')->get()->result();
+		$paymentinfo=$this->db->select('*')->from('user_calls')->where('user_id', $user_id)->get()->row();
+        $data['totalcalls'] = $paymentinfo->total_calls;
         // print_r($data['requests']);
         // exit;
-        $data['payments'] = $this->db
-        ->select('*')
-        ->from('payment_paypal p')
-        ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
-        ->order_by('p.id', 'DESC')
-        ->get()
-        ->result(); 
-        // pr($data['payments']);exit;
         _frontLayout('web-mgmt/expertbooking', $data);
     }
     public function orders()
@@ -1938,40 +1928,14 @@ class Web extends Common_Controller
         $data['user'] = $this->front_model->get_user_by_id($user_id);
         $data['orders'] = $this->db->select('*')->from('eshop_orders')->where('user_id', $user_id)->order_by('id', 'desc')->get()->result();
         $data['products'] = $this->db->select('*')->from('eshop_products')->order_by('id', 'desc')->get()->result();
-        $data['latesorders'] = $this->db
-            ->select('*')
-            ->from('eshop_orders')
-            ->where(['user_id' => $user_id, 'DATE(order_date)' => date('Y-m-d')])
-            ->order_by('id', 'desc')
-            ->get()
-            ->result();
-        $data['customer_count'] = $this->db->from('user_registration')->where('member_type', 2)->count_all_results();
-        $data['expert_count'] = $this->db->from('user_registration')->where('member_type', 1)->count_all_results();
-        $date['events'] = $this->db->select('*')->from('expert_events')->where('user_id', $user_id)->get()->result();
-        $data['experts'] = $this->db
-            ->select('*')
-            ->from('user_registration')
-            ->where('member_type', 1) // expert
-            ->get()
-            ->result();
-        $data['expert_list'] = $this->db
-            ->select('u.user_id, u.first_name, u.last_name, u.username, u.email')
-            ->from('expert_events e')
-            ->join('user_registration u', 'u.user_id = e.user_id')
-            ->group_by('u.user_id') // duplicate experts remove
-            ->get()
-            ->result();
-        $data['requests'] = $this->db->select('cmr.*, ur.first_name as customer_name')->from('customer_meeting_requests cmr')->join('user_registration ur', 'ur.user_id = cmr.expert_id')->where('cmr.expert_id', $user_id)->order_by('cmr.id', 'DESC')->get()->result();
-        // print_r($data['requests']);
-        // exit;
         $data['payments'] = $this->db
-        ->select('*')
-        ->from('payment_paypal p')
-        ->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
-        ->order_by('p.id', 'DESC')
-        ->get()
-        ->result(); 
-        // pr($data['payments']);exit;
+			->select('*')
+			->from('payment_paypal p')
+			->join('eshop_orders o', 'o.order_id = p.order_id', 'left')
+			->order_by('p.id', 'DESC')
+			->get()
+			->result(); 
+        // pr($data['orders']);exit;
 
         _frontLayout('web-mgmt/orders', $data);
     }
@@ -4237,10 +4201,6 @@ class Web extends Common_Controller
 
     /**
      * Wallet Topup: Capture PayPal order & credit wallet
-     * URL: /paypal_wallet/capture_order/{orderID}
-     */
-    public function paypal_wallet_capture_order($orderID)
-    {
         if (!$this->session->userdata('auth_affiliate')) {
             $this->output->set_content_type('application/json')->set_output(json_encode([
                 'status' => false,

@@ -1,9 +1,14 @@
-
-
-      <!-- breadcrumbs-area-start -->
+<!-- breadcrumbs-area-start -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
+<?php
+  // Messages page tabs: compose, inbox, sent
+  $activeTab = $this->input->get('tab') ?: 'compose';
+  if (!in_array($activeTab, ['compose','inbox','sent'], true)) {
+    $activeTab = 'compose';
+  }
+?>
 
 <div class="breadcrumbs-area mb-70">
     <div class="container">
@@ -39,111 +44,290 @@
         <div class="section-bg-color">
             <div class="row">
                 <div class="col-lg-12">
-                    <!-- My Account Page Start -->
                     <div class="myaccount-page-wrapper">
-                        <!-- My Account Tab Menu Start -->
 
                         <div class="row">
                             <div class="col-lg-3 col-md-4">
                                 <?php echo $this->load->view('leftmenu');?>
                             </div>
-                            <!-- My Account Tab Menu End -->
 
-                            <!-- My Account Tab Content Start -->
                             <div class="col-lg-9 col-md-8">
-                                <div class="tab-content" id="myaccountContent">
-                                    
-                                    <!-- Single Tab Content Start -->
-                                    <div class="tab-pane fade show active" id="orders" role="tabpanel">
-                                        <div class="myaccount-content">
-                                            <h5>Compose Message</h5>
-                                            <?php 
-      if(!empty($this->session->flashdata('flash_msg')))
-      {
-      ?>
-      <div class="alert alert-success alert-styled-right alert-arrow-right alert-bordered">
-         <button type="button" class="close" data-dismiss="alert"><span>×</span><span class="sr-only">Close</span></button>
-         <!--<span class="text-semibold">Well done!</span> Message is sent successfully-->
-         <?php echo $this->session->flashdata('flash_msg');?>
-      </div>
-      <?php    
-      }
-      ?>
-      <div class="card card-flat">
-         
-         <?php 
-            echo form_open(ci_site_url()."Web/composeMessage",array('method'=>'post','class'=>'form-horizontal', 'enctype'=>'multipart/form-data'));
-            ?>
-         <div class="card-body">
-            <div class="row">
-               <div class="col-md-10">
-                  <div class="form-group">
-                     <label class="col-lg-3 control-label">Users:</label>
-                     <div class="col-lg-9">
-                        <select name="users[]" id="users" multiple="multiple" data-placeholder="Select Users" class="form-select">
-                           <optgroup label="Users">
-                              
-                              <?php 
-                                 if(!empty($all_active_members) && count($all_active_members)>0)
-                                 {
-                                   foreach($all_active_members as $member)
-                                   {
-                                     if($member->user_id!=COMP_USER_ID)
-                                     {
-                                  ?>
-                                  <option value="<?php echo $member->user_id;?>"><?php echo $member->username;?></option>
-                                  <?php
-                                      }
-                                    }//end foreach
-                                 }//end if
-                               ?>
-                           </optgroup>
-                        </select>
-                        <span class="valid_users" style="color:red;font-weight:bold"></style>
-                     </div>
-                  </div>
-                  <div class="form-group mt-3">
-                     <label class="col-lg-3 control-label">Subject:</label>
-                     <div class="col-lg-9">
-                        <input type="text" name="subject" id="subject" class="form-control" placeholder="Enter Subject Here">
-                        <span class="valid_subject" style="color:red;font-weight:bold"></style>
-                     </div>
-                  </div>
-                  <div class="form-group mt-3">
-                     <label class="col-lg-3 control-label">Message:</label>
-                     <div class="col-lg-9">
-                        <textarea name="message" id="message" class="col-lg-3 form-control"></textarea>
-                     </div>
-                  </div>
-                  <div class="form-group mt-3">
-                     <label class="col-lg-3 control-label">Attach File:</label>
-                     <div class="col-lg-9">
-                        <input type="file" name="attachment" id="attachment" class="form-control">
-                     </div>
-                  </div>
-                  <div class="text-right mt-3">
-                     <button type="submit" name="btn" id="btn" value="send" class="btn btn-primary">Send<i class="icon-arrow-right14 position-right"></i></button>
-                  </div>
-               </div>
-            </div>
-         </div>
-         <?php echo form_close();?>
-      </div>
-                                        </div>
-                                    </div>
-                                    
 
-                                   
-                                    
-                                </div>
-                            </div> <!-- My Account Tab Content End -->
+                                <div class="myaccount-content">
+                                    <h5>Messages</h5>
+
+                                    <!-- Tabs -->
+                                    <ul class="nav nav-tabs mb-3" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link <?= ($activeTab==='compose')?'active':'';?>" id="tab-compose" data-bs-toggle="tab" data-bs-target="#pane-compose" type="button" role="tab">Compose</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link <?= ($activeTab==='inbox')?'active':'';?>" id="tab-inbox" data-bs-toggle="tab" data-bs-target="#pane-inbox" type="button" role="tab">Inbox</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link <?= ($activeTab==='sent')?'active':'';?>" id="tab-sent" data-bs-toggle="tab" data-bs-target="#pane-sent" type="button" role="tab">Sent</button>
+                                        </li>
+                                    </ul>
+
+                                    <div class="tab-content">
+
+                                        <!-- Compose -->
+                                        <div class="tab-pane fade <?= ($activeTab==='compose')?'show active':'';?>" id="pane-compose" role="tabpanel">
+                                            <?php 
+                                              if(!empty($this->session->flashdata('flash_msg')))
+                                              {
+                                            ?>
+                                            <div class="alert alert-success alert-styled-right alert-arrow-right alert-bordered">
+                                                <button type="button" class="close" data-dismiss="alert"><span>×</span><span class="sr-only">Close</span></button>
+                                                <?php echo $this->session->flashdata('flash_msg');?>
+                                            </div>
+                                            <?php } ?>
+
+                                            <div class="card card-flat">
+                                                <?php 
+                                                    echo form_open(ci_site_url()."Web/composeMessage",array('method'=>'post','class'=>'form-horizontal', 'enctype'=>'multipart/form-data'));
+                                                ?>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-10">
+                                                            <div class="form-group">
+                                                                <label class="col-lg-3 control-label">Users:</label>
+                                                                <div class="col-lg-9">
+                                                                    <select name="users[]" id="users" multiple="multiple" data-placeholder="Select Users" class="form-select">
+                                                                        <optgroup label="Users">
+                                                                            <?php 
+                                                                                if(!empty($all_active_members) && count($all_active_members)>0)
+                                                                                {
+                                                                                    foreach($all_active_members as $member)
+                                                                                    {
+                                                                                        if($member->user_id!=COMP_USER_ID)
+                                                                                        {
+                                                                            ?>
+                                                                            <option value="<?php echo $member->user_id;?>"><?php echo $member->username;?></option>
+                                                                            <?php
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            ?>
+                                                                        </optgroup>
+                                                                    </select>
+                                                                    <span class="valid_users" style="color:red;font-weight:bold"></style>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group mt-3">
+                                                                <label class="col-lg-3 control-label">Subject:</label>
+                                                                <div class="col-lg-9">
+                                                                    <input type="text" name="subject" id="subject" class="form-control" placeholder="Enter Subject Here">
+                                                                    <span class="valid_subject" style="color:red;font-weight:bold"></style>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group mt-3">
+                                                                <label class="col-lg-3 control-label">Message:</label>
+                                                                <div class="col-lg-9">
+                                                                    <textarea name="message" id="message" class="col-lg-3 form-control"></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group mt-3">
+                                                                <label class="col-lg-3 control-label">Attach File:</label>
+                                                                <div class="col-lg-9">
+                                                                    <input type="file" name="attachment" id="attachment" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="text-right mt-3">
+                                                                <button type="submit" name="btn" id="btn" value="send" class="btn btn-primary">Send<i class="icon-arrow-right14 position-right"></i></button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <?php echo form_close();?>
+                                            </div>
+                                        </div>
+
+                                        <!-- Inbox -->
+                                        <div class="tab-pane fade <?= ($activeTab==='inbox')?'show active':'';?>" id="pane-inbox" role="tabpanel">
+                                            <div class="row">
+                                                <div class="panel panel-flat">
+                                                    <?php 
+                                                    if(!empty($this->session->flashdata('flash_msg')))
+                                                    {
+                                                    ?>
+                                                    <div class="alert alert-success alert-styled-right alert-arrow-right alert-bordered">
+                                                        <button type="button" class="close" data-dismiss="alert"><span>×</span><span class="sr-only">Close</span></button>
+                                                        <?php echo $this->session->flashdata('flash_msg');?>
+                                                    </div>
+                                                    <?php } ?>
+
+                                                    <table class="table datatable-responsive">
+               <thead>
+                  <tr>
+                     <th>Sr.No</th>
+                     <th>Message Id</th>
+                     <th>Date </th>
+                     <th>Subject</th>
+                     <th>Sender</th>
+                     <th>Attachment</th>
+                     <th>Action</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  <?php 
+                  if(!empty($all_inbox_msg) && count($all_inbox_msg)>0)
+                  {
+                    $sno=0;
+                    foreach ($all_inbox_msg as $msg) 
+                    {
+                        $sno++;
+                  ?>
+                    <tr>
+                       <td><?php echo $sno;?></td>
+                       <td><?php echo $msg->message_id;?></td>
+                       <td><?php echo date(date_formats(),strtotime($msg->ts));?></td>
+                       <td><?php echo $msg->subject;?></td>
+                       <td><?php echo $msg->sender_name;?></td>
+                        <td>
+                           <?php
+                           if(!empty($msg->attachment))
+                           {
+                           ?>
+                           <a href="<?php echo ci_site_url();?>uploads/images/<?php echo $msg->attachment;?>" target="_blank">View Attachment</a>
+                           <?php    
+                           } 
+                           else 
+                           {
+                           ?>
+                           ---
+                           <?php    
+                           }
+                           ?>
+                        </td>
+                       <td>
+                          <ul class="icons-list">
+                             <li>
+                                <a href="#" msg-id="<?php echo ID_encode($msg->id);?>" class="read_msg" data-popup="tooltip" title="" data-original-title="Read Message" data-toggle="modal" data-target="#modal_form_vertical"><i class="icon-eye"></i></a>
+                             </li>
+                             <li>
+                                <a onclick="return deleteConfirm();" href="<?php echo ci_site_url();?>Web/deleteInboxMessage/<?php echo ID_encode($msg->id);?>" data-popup="tooltip" title="" data-original-title="Close Ticket"><i class="icon-trash"></i></a>
+                             </li>
+                          </ul>
+                       </td>
+                    </tr>
+                  <?php     
+                    }
+                  }
+                  ?>
+               </tbody>
+            </table>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Sent -->
+                                        <div class="tab-pane fade <?= ($activeTab==='sent')?'show active':'';?>" id="pane-sent" role="tabpanel">
+										<table class="table table-striped table-bordered align-middle mb-0">
+               <thead class="table-light">
+                  <tr>
+                     <th style="width:70px">Sr.No</th>
+                     <th style="width:140px">Date</th>
+                     <th>Subject</th>
+                     <th style="width:180px">Sent To</th>
+                     <th style="width:160px">Attachment</th>
+                     <th style="width:110px">Action</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  <?php 
+                  //pr($all_sent_msg);
+                  if(!empty($all_sent_msg) && count($all_sent_msg)>0)
+                  {
+                     $sno=0;
+                     foreach ($all_sent_msg as $msg) 
+                     {
+                        $sno++;
+                  ?>
+                     <tr>
+                        <td><?php echo $sno;?></td>
+                        <td><?php echo date(date_formats(),strtotime($msg->ts));?></td>
+                        <td><?php echo $msg->subject;?></td>
+                        <td><?php echo $msg->receiver_name;?></td>
+                        <td>
+                           <?php
+                           if(!empty($msg->attachment))
+                           {
+                           ?>
+                           <a class="btn btn-sm btn-outline-primary" href="<?php echo ci_site_url();?>uploads/images/<?php echo $msg->attachment;?>" target="_blank" rel="noopener">View</a>
+                           <?php    
+                           } 
+                           else 
+                           {
+                           ?>
+                           <span class="text-muted">---</span>
+                           <?php    
+                           }
+                           ?>
+                        </td>
+                        <td>
+                           <div class="d-flex gap-2">
+                              <button 
+                                 type="button"
+                                 class="btn btn-sm btn-outline-success read_msg"
+                                 data-msg-id="<?php echo ID_encode($msg->id);?>"
+                                 data-bs-toggle="modal"
+                                 data-bs-target="#modal_form_vertical"
+                                 title="View">
+                                 <i class="fa fa-eye"></i>
+                              </button>
+
+                              <a class="btn btn-sm btn-outline-danger js-confirm-delete" data-confirm="Are you sure you want to delete this message?" href="<?php echo ci_site_url();?>Web/deleteSentMessage/<?php echo ID_encode($msg->id);?>" title="Delete">
+                                 <i class="fa fa-trash"></i>
+                              </a>
+                           </div>
+                        </td>
+                     </tr>                  
+                  <?php       
+                     }
+                  }
+                  else
+                  {
+                  ?>
+                     <tr>
+                        <td colspan="6" class="text-center text-muted">No sent messages found.</td>
+                     </tr>
+                  <?php
+                  }
+                  ?>
+               </tbody>
+            </table>
+                                        </div>
+
+                                    </div> <!-- tab-content -->
+
+                                </div> <!-- myaccount-content -->
+
+                            </div>
                         </div>
-                    </div> <!-- My Account Page End -->
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Reuse existing modal for reading message -->
+<div id="modal_form_vertical" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="msg_subject"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="msg" class="text-break"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .control-label{
   font-weight: 700;
@@ -240,8 +424,55 @@ $pay = $this->session->flashdata('payment_success'); ?>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <!-- my account wrapper end -->
 <script>
+    $(document).ready(function(){
+
+      // confirm delete
+      $(document).on('click', '.js-confirm-delete', function(e){
+        var msg = $(this).data('confirm') || 'Are you sure you want to delete?';
+        if(!confirm(msg)) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // delegated handler so it works even if table is re-rendered
+      $(document).on('click', '.read_msg', function(){
+        var msg_id = $(this).data('msg-id');
+
+        // reset modal content while loading
+        $('#msg_subject').text('Loading...');
+        $('#msg').html('<div class="text-muted">Please wait...</div>');
+
+        $.ajax({
+          url: "<?php echo ci_site_url();?>Web/readMessage/",
+          type: "POST",
+          dataType: "json",
+          data: { msg_id: msg_id },
+          success: function (res) {
+            // support both {subject,message} and {status,data:{...}} formats
+            var subject = res?.subject ?? res?.data?.subject ?? '';
+            var message = res?.message ?? res?.data?.message ?? '';
+
+            $('#msg_subject').text(subject ? ('Subject: ' + subject) : 'Message');
+            $('#msg').html(message ? ('<h6 class="mb-2">Message</h6><div>' + message + '</div>') : '<div class="text-muted">No message content.</div>');
+          },
+          error: function() {
+            $('#msg_subject').text('Error');
+            $('#msg').html('<div class="text-danger">Unable to load message. Please try again.</div>');
+          }
+        });
+      });
+
+    });//end ready
+
+    // backward compatible (if any old onclick exists somewhere)
+    function deleteConfirm(){
+      return confirm('Are you sure you want to delete this message?');
+    }
+
 $(window).on('load', function() {
     <?php if ($this->session->flashdata('payment_success')) { ?>
     $('#paymentSuccessModal').modal('show');
@@ -891,4 +1122,19 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('expertImage').src = image;
     });
 });
+</script>
+
+<script>
+  // keep tab in URL (optional) so refresh maintains selection
+  document.addEventListener('shown.bs.tab', function(event) {
+    var btn = event.target;
+    if (!btn || !btn.id) return;
+    var tab = 'compose';
+    if (btn.id === 'tab-inbox') tab = 'inbox';
+    if (btn.id === 'tab-sent') tab = 'sent';
+
+    var url = new URL(window.location.href);
+    url.searchParams.set('tab', tab);
+    window.history.replaceState({}, '', url.toString());
+  });
 </script>

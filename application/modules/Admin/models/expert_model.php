@@ -172,6 +172,7 @@ class Expert_Model extends Common_Model
 				    }   
 				    
 				    $viewm=html_entity_decode('<a href="'.ci_site_url().'Admin/Eshop_orders/allReports/'.ID_encode($row->user_id).'" ><i class="fa fa-eye"></i></a>');
+					// $viewmlogin=html_entity_decode('<a href="'.ci_site_url().'Admin/Expert/loginAs/'.ID_encode($row->user_id).'" target="_blank" title="Login Access"><i class="fa fa-lock"></i></a>');
 				
 				$nestedData = array();
                 $nestedData[] = ++$sr_no;
@@ -185,7 +186,7 @@ class Expert_Model extends Common_Model
 				
 				
 				
-				$nestedData[] = $edit.'&nbsp;&nbsp;'.$viewm;
+				$nestedData[] = $edit.'&nbsp;&nbsp;'.$viewm;	
                 $data[] = $nestedData;
            }
             $json_data = array(
