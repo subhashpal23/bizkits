@@ -99,8 +99,13 @@ class Web extends Common_Controller
             exit;
         }
         $data=array();
-        $data['all_active_members']=$this->member_model->getAllActiveMembers();
-
+        $data['all_active_members']=$this->db
+		->select('u.*')
+		->from('user_registration as u')
+		->group_by('u.username')
+		->order_by('u.id', 'ASC')
+		->get()->result();
+		// print_r($data['all_active_members']);exit;
         // NEW: for tabbed Messages page
         $data['all_inbox_msg'] = $this->message_panel_model->getAllInboxMessage($login_user_id);
         $data['all_sent_msg']  = $this->message_panel_model->getAllSentMessage($login_user_id);

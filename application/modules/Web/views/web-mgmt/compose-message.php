@@ -55,7 +55,15 @@
 
                                 <div class="myaccount-content">
                                     <h5>Messages</h5>
-
+									<?php 
+                                              if(!empty($this->session->flashdata('flash_msg')))
+                                              {
+                                            ?>
+                                            <div class="alert alert-success alert-styled-right alert-arrow-right alert-bordered">
+                                                <button type="button" class="close" data-dismiss="alert"><span>×</span><span class="sr-only">Close</span></button>
+                                                <?php echo $this->session->flashdata('flash_msg');?>
+                                            </div>
+                                            <?php } ?>
                                     <!-- Tabs -->
                                     <ul class="nav nav-tabs mb-3" role="tablist">
                                         <li class="nav-item" role="presentation">
@@ -69,19 +77,12 @@
                                         </li>
                                     </ul>
 
+
                                     <div class="tab-content">
 
                                         <!-- Compose -->
                                         <div class="tab-pane fade <?= ($activeTab==='compose')?'show active':'';?>" id="pane-compose" role="tabpanel">
-                                            <?php 
-                                              if(!empty($this->session->flashdata('flash_msg')))
-                                              {
-                                            ?>
-                                            <div class="alert alert-success alert-styled-right alert-arrow-right alert-bordered">
-                                                <button type="button" class="close" data-dismiss="alert"><span>×</span><span class="sr-only">Close</span></button>
-                                                <?php echo $this->session->flashdata('flash_msg');?>
-                                            </div>
-                                            <?php } ?>
+                                           
 
                                             <div class="card card-flat">
                                                 <?php 
@@ -103,7 +104,7 @@
                                                                                         if($member->user_id!=COMP_USER_ID)
                                                                                         {
                                                                             ?>
-                                                                            <option value="<?php echo $member->user_id;?>"><?php echo $member->username;?></option>
+                                                                            <option value="<?php echo $member->user_id;?>"><?php echo $member->username.' ('.$member->first_name.' '.$member->last_name.')'  ;?></option>
                                                                             <?php
                                                                                         }
                                                                                     }
@@ -147,15 +148,7 @@
                                         <div class="tab-pane fade <?= ($activeTab==='inbox')?'show active':'';?>" id="pane-inbox" role="tabpanel">
                                             <div class="row">
                                                 <div class="panel panel-flat">
-                                                    <?php 
-                                                    if(!empty($this->session->flashdata('flash_msg')))
-                                                    {
-                                                    ?>
-                                                    <div class="alert alert-success alert-styled-right alert-arrow-right alert-bordered">
-                                                        <button type="button" class="close" data-dismiss="alert"><span>×</span><span class="sr-only">Close</span></button>
-                                                        <?php echo $this->session->flashdata('flash_msg');?>
-                                                    </div>
-                                                    <?php } ?>
+                                                   
 
                                                     <table class="table datatable-responsive">
                <thead>
@@ -332,6 +325,17 @@
 .control-label{
   font-weight: 700;
 }
+/* keep Select2 height similar to Bootstrap input */
+.select2-container--default .select2-selection--multiple{
+  min-height: calc(1.5em + .75rem + 2px);
+  border: 1px solid #ced4da;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__rendered{
+  padding: .375rem .75rem;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice{
+  margin-top: .25rem;
+}
 </style>
 <div class="modal fade" id="requestModal">
     <div class="modal-dialog">
@@ -349,7 +353,7 @@
                         <option value="">-- Select Expert --</option>
                         <?php foreach ($experts as $e) { ?>
                         <option value="<?= $e->user_id ?>">
-                            <?= $e->first_name ?> <?= $e->last_name ?> -
+                            <?= $e->first_name ?> <?= $e->last_name ?> - 
                             <?= $e->email ?>
                         </option>
                         <?php } ?>
@@ -423,6 +427,11 @@ $pay = $this->session->flashdata('payment_success'); ?>
 <?php endif; ?>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- Select2 (must be after jQuery) -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- my account wrapper end -->
@@ -465,6 +474,16 @@ $pay = $this->session->flashdata('payment_success'); ?>
           }
         });
       });
+
+      // Select2 for users (search enabled)
+      if ($.fn.select2) {
+        $('#users').select2({
+          placeholder: $('#users').data('placeholder') || 'Select Users',
+          width: '100%',
+          closeOnSelect: false,
+          allowClear: true
+        });
+      }
 
     });//end ready
 

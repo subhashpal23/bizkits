@@ -55,10 +55,11 @@
                                         <div class="myaccount-content">
                                             <h5>Welcome <?php echo $this->session->userdata('username'); ?></h5>
                                             <div class="row mt-3 mb-3">
-                                                
+
                                                 <!-- Users -->
                                                 <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-primary border-2" style="cursor:pointer;" onclick="redirect('experts')">
+                                                    <div class="card text-center p-3 border-primary border-2"
+                                                        style="cursor:pointer;" onclick="redirect('experts')">
                                                         <?php 
 															if($_SESSION['userType'] == '2')
 															{
@@ -88,7 +89,8 @@
 
                                                 <!-- Orders -->
                                                 <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-success border-2" style="cursor:pointer;" onclick="redirect('orders')">
+                                                    <div class="card text-center p-3 border-success border-2"
+                                                        style="cursor:pointer;" onclick="redirect('orders')">
                                                         <div class="card-body">
                                                             <div class="icon text-success mb-2"><i
                                                                     class="bi bi-bag-fill"></i></div>
@@ -98,182 +100,214 @@
                                                     </div>
                                                 </div>
 
-                                                
+
                                                 <?php 
 														if($_SESSION['userType'] == '2')
 															{
 															?>
-                                                            <!-- Products -->
+                                                <!-- Products -->
                                                 <div class="col-md-3 col-sm-6">
                                                     <div class="card text-center p-3 border-warning border-2">
                                                         <div class="card-body">
                                                             <div class="icon text-warning mb-2"><i
                                                                     class="bi bi-box-seam"></i></div>
                                                             <h5 class="card-title">Wallet</h5>
-                                                            <h2 class="fw-bold"><?php echo currency(); echo ($walletpayment)?$walletpayment:0;?></h2>
+                                                            <h2 class="fw-bold">
+                                                                <?php echo currency(); echo ($walletpayment)?$walletpayment:0;?>
+                                                            </h2>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-warning border-2" style="cursor:pointer;" onclick="redirect('sessions')">
+                                                    <div class="card text-center p-3 border-warning border-2"
+                                                        style="cursor:pointer;" onclick="redirect('sessions')">
                                                         <div class="card-body">
                                                             <div class="icon text-warning mb-2"><i
                                                                     class="bi bi-phone"></i></div>
                                                             <h5 class="card-title">Requested</h5>
-                                                            <h2 class="fw-bold"><?php echo ($totalrcalls)?$totalrcalls:0;?></h2>
+                                                            <h2 class="fw-bold">
+                                                                <?php echo ($totalrcalls)?$totalrcalls:0;?></h2>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="row">
-                                                
+
                                                 <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-warning border-2" style="cursor:pointer;" onclick="redirect('sessions')">
+                                                    <div class="card text-center p-3 border-warning border-2"
+                                                        style="cursor:pointer;" onclick="redirect('sessions')">
                                                         <div class="card-body">
                                                             <div class="icon text-warning mb-2"><i
                                                                     class="bi bi-phone"></i></div>
                                                             <h5 class="card-title">Approved</h5>
-                                                            <h2 class="fw-bold"><?php echo ($totalacalls)?$totalacalls:0;?></h2>
+                                                            <h2 class="fw-bold">
+                                                                <?php echo ($totalacalls)?$totalacalls:0;?></h2>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-warning border-2" style="cursor:pointer;" onclick="redirect('sessions')">
+                                                    <div class="card text-center p-3 border-warning border-2"
+                                                        style="cursor:pointer;" onclick="redirect('sessions')">
                                                         <div class="card-body">
                                                             <div class="icon text-warning mb-2"><i
                                                                     class="bi bi-phone"></i></div>
                                                             <h5 class="card-title">Sessions</h5>
-                                                            <h2 class="fw-bold"><?php echo ($totalcalls)?$totalcalls:0;?></h2>
+                                                            <h2 class="fw-bold">
+                                                                <?php echo ($totalcalls)?$totalcalls:0;?></h2>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-warning border-2" style="cursor:pointer;" onclick="redirect('sessions')">
+                                                    <div class="card text-center p-3 border-warning border-2"
+                                                        style="cursor:pointer;" onclick="redirect('sessions')">
                                                         <div class="card-body">
                                                             <div class="icon text-warning mb-2"><i
                                                                     class="bi bi-phone"></i></div>
                                                             <h5 class="card-title">Connected</h5>
-                                                            <h2 class="fw-bold"><?php echo ($usedcalls)?$usedcalls:0;?></h2>
+                                                            <h2 class="fw-bold"><?php echo ($usedcalls)?$usedcalls:0;?>
+                                                            </h2>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3 col-sm-6">
-                                                    <div class="card text-center p-3 border-warning border-2" style="cursor:pointer;" onclick="redirect('sessions')">
+                                                    <div class="card text-center p-3 border-warning border-2"
+                                                        style="cursor:pointer;" onclick="redirect('sessions')">
                                                         <div class="card-body">
                                                             <div class="icon text-warning mb-2"><i
                                                                     class="bi bi-phone"></i></div>
                                                             <h5 class="card-title">Remaining</h5>
-                                                            <h2 class="fw-bold"><?php echo ($remaining_calls)?$remaining_calls:0;?></h2>
+                                                            <h2 class="fw-bold">
+                                                                <?php echo ($remaining_calls)?$remaining_calls:0;?></h2>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <?php
 														}
 															?>
                                             </div>
-                                            
+
                                         </div>
                                     </div>
                                     <!-- Single Tab Content End -->
-                                    
+
 
                                     <!-- Single Tab Content Start -->
                                     <div class="tab-pane fade show active" id="orders" role="tabpanel">
                                         <div class="myaccount-content">
-                                                <h5>Latest Orders</h5>
-                                                <?php
+                                            <h5>Latest Orders</h5>
+                                            <?php
                                                     if(count($latesorders)>0)
                                                     {
                                                     ?>
-                                                <div class="myaccount-table table-responsive text-center">
-                                                    <table class="table table-bordered">
-                                                        <thead class="thead-light">
-                                                            <tr>
-                                                                <th>Order</th>
-                                                                <th>Date</th>
-                                                                <!--<th>Status</th>-->
-                                                                <th>Total</th>
-                                                                <th>Action</th>
-                                                                <th>Download</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <?php
+                                            <div class="myaccount-table table-responsive text-center">
+                                                <table class="table table-bordered">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th>Order</th>
+                                                            <th>Date</th>
+                                                            <!--<th>Status</th>-->
+                                                            <th>Total</th>
+                                                            <th>Action</th>
+                                                            <th>Download</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php
                                                                 $s=1;
                                                                 foreach($latesorders as $key=>$val)
                                                                 {
                                                                 ?>
-                                                            <tr>
-                                                                <td><?php echo $val->order_id; ?></td>
-                                                                <td><?php echo $val->order_date; ?></td>
-                                                                <!--<td><?php echo $val->order_status; ?></td>-->
-                                                                <td><?php echo currency() . $val->final_price; ?></td>
-                                                                <td><a href="<?php echo base_url(); ?>invoice?order_id=<?php echo $val->order_id; ?>"
-                                                                        class="btn btn-sqr">View Invoice</a>
-                                                                </td>
-                                                                <td><a href="<?php echo base_url(); ?>invoice?order_id=<?php echo $val->order_id; ?>"
-                                                                        class="btn btn-sqr"><i
-                                                                            class="fa fa-cloud-download"></i>
-                                                                        Download File</a></td>
-                                                            </tr>
-                                                            <?php
+                                                        <tr>
+                                                            <td><?php echo $val->order_id; ?></td>
+                                                            <td><?php echo $val->order_date; ?></td>
+                                                            <!--<td><?php echo $val->order_status; ?></td>-->
+                                                            <td><?php echo currency() . $val->final_price; ?></td>
+                                                            <td><a href="<?php echo base_url(); ?>invoice?order_id=<?php echo $val->order_id; ?>"
+                                                                    class="btn btn-sqr">View Invoice</a>
+                                                            </td>
+                                                            <td><a href="<?php echo base_url(); ?>invoice?order_id=<?php echo $val->order_id; ?>"
+                                                                    class="btn btn-sqr"><i
+                                                                        class="fa fa-cloud-download"></i>
+                                                                    Download File</a></td>
+                                                        </tr>
+                                                        <?php
                                                                 }
                                                                 ?>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                <?php
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <?php
                                                     }
                                                     else
                                                     {
                                                        ?>
-                                                <p class="mb-0">No Recent Orders</p>
-                                                <?php
+                                            <p class="mb-0">No Recent Orders</p>
+                                            <?php
                                                     }
                                                     ?>
-                                            </div>
+                                        </div>
                                     </div>
                                     <!-- Single Tab Content Start -->
                                     <div class="tab-pane fade show active" id="expert_booking" role="tabpanel">
                                         <div class="myaccount-content">
                                             <h5>Connect with Experts</h5>
                                             <div class="row">
-                                                <?php if($totalcalls){?>
-                                                <div class="col-md-9">
-                                                    <div id="customerCalendar"></div>
-                                                    <?php
-                                                        $sessionUserType = $this->session->userdata('userType');
-                                                        $sessionMemberType = $this->session->userdata('member_type');
-                                                        $isExpert = ((string)$sessionUserType === '1' || (string)$sessionMemberType === '1');
-                                                    ?>
-                                                   
+                                                <?php if ($_SESSION['userType'] == '2') { ?>
+
+                                                <?php if (!empty($totalcalls)) { ?>
+
+													<div class="col-md-9">
+														<div id="customerCalendar"></div>
+														<?php
+															$sessionUserType   = $this->session->userdata('userType');
+															$sessionMemberType = $this->session->userdata('member_type');
+															$isExpert = (
+																(string)$sessionUserType === '1' ||
+																(string)$sessionMemberType === '1'
+															);
+														?>
                                                 </div>
 
-                                                
-                                                <?php
-                                                }
-                                                // else
-                                                // {
-                                                //     echo "<p style='color:red'>You dont have any sessions count. Please purchase sessions.</p>";
-                                                // }
-                                               
-												else
-                                                {?>
-                                                     <!-- <h5 class="mt-3">Expert Calendar (Meeting Requests)</h5> -->
-													 <div class="col-md-9">
-													 <div id="expertCalendar"></div>
-												</div>
-                                               <?php  }?>
-											   <div class="col-md-3 card">
+                                                <div class="col-md-3 card">
                                                     <h5 id="title">Select Date</h5>
                                                     <h6 id="date"></h6>
                                                     <div id="desc"></div>
                                                 </div>
 
-                                                <button class="btn btn-primary mt-2" onclick="openRequestModal()">
-                                                    Add Request
-                                                </button>
+                                                <div class="col-md-12">
+                                                    <button class="btn btn-primary mt-2" onclick="openRequestModal()">
+                                                        Add Request
+                                                    </button>
+                                                </div>
+
+                                                <?php } else { ?>
+                                                <div class="col-md-12">
+                                                    <p style="color:red">
+                                                        You don’t have any session count. Please purchase sessions.
+                                                    </p>
+                                                </div>
+                                                <?php } ?>
+
+                                                <?php } else { ?>
+
+                                                <div class="col-md-9">
+                                                    <div id="expertCalendar"></div>
+                                                </div>
+
+                                                <div class="col-md-3 card">
+                                                    <h5 id="title">Select Date</h5>
+                                                    <h6 id="date"></h6>
+                                                    <div id="desc"></div>
+                                                </div>
+
+                                                <div class="col-md-12">
+                                                    <button class="btn btn-primary mt-2" onclick="openRequestModal()">
+                                                        Add Request
+                                                    </button>
+                                                </div>
+
+                                                <?php } ?>
                                             </div>
 
                                         </div>
@@ -746,8 +780,8 @@ $(window).on('load', function() {
 });
 </script>
 <script>
-document.addEventListener('click', function(e){
-    if(e.target.classList.contains('viewPayment')){
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('viewPayment')) {
 
         let data = JSON.parse(e.target.getAttribute('data-order'));
 
@@ -809,7 +843,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // =====================
     // CUSTOMER CALENDAR
     // =====================
-    if(document.getElementById('customerCalendar')){
+    if (document.getElementById('customerCalendar')) {
         customerCalendar = new FullCalendar.Calendar(
             document.getElementById('customerCalendar'), {
                 initialView: 'dayGridMonth',
@@ -839,7 +873,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         $('#desc').html(html);
                     } else {
                         $('#title').text('No Meeting');
-                        $('#desc').html('<span class="text-muted">There are no meetings scheduled for this date.</span>');
+                        $('#desc').html(
+                            '<span class="text-muted">There are no meetings scheduled for this date.</span>'
+                        );
                     }
                 }
             }
@@ -856,7 +892,7 @@ document.addEventListener('DOMContentLoaded', function() {
         $isExpert = ((string)$sessionUserType === '1' || (string)$sessionMemberType === '1');
     ?>
     <?php if($isExpert){ ?>
-    if(document.getElementById('expertCalendar')){
+    if (document.getElementById('expertCalendar')) {
         expertCalendar = new FullCalendar.Calendar(
             document.getElementById('expertCalendar'), {
                 initialView: 'dayGridMonth',
@@ -875,7 +911,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // normalize requested_date (start) to date-only for matching
                     let filtered = (allExpertEvents || []).filter(ev => {
                         const raw = (ev.start != null) ? String(ev.start) : '';
-                        const dateOnly = raw ? raw.substring(0,10) : '';
+                        const dateOnly = raw ? raw.substring(0, 10) : '';
                         return dateOnly === selectedDate;
                     });
 
@@ -895,14 +931,16 @@ document.addEventListener('DOMContentLoaded', function() {
                                                             Reject</a>
                                 `;
                             } else if (ev.status === 'approved') {
-                                const link = (ev.meet_link != null) ? String(ev.meet_link).trim() : '';
+                                const link = (ev.meet_link != null) ? String(ev.meet_link)
+                                    .trim() : '';
                                 if (link !== '') {
                                     actions = `
                                        
                                         <div class="small" style="word-break:break-all;">${link}</div>
                                     `;
                                 } else {
-                                    actions = `<span class="badge bg-success mt-2">Approved</span>`;
+                                    actions =
+                                        `<span class="badge bg-success mt-2">Approved</span>`;
                                 }
                             } else if (ev.status === 'rejected') {
                                 actions = `<span class="badge bg-danger mt-2">Rejected</span>`;
@@ -921,7 +959,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         $('#desc').html(html);
                     } else {
                         $('#title').text('No Request');
-                        $('#desc').html('<span class="text-muted">No meeting requests for this date.</span>');
+                        $('#desc').html(
+                            '<span class="text-muted">No meeting requests for this date.</span>');
                     }
                 }
             }
@@ -933,40 +972,40 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Replace inline onclick usage with delegated handlers (works for dynamic HTML)
-$(document).off('click', '.js-approve-request').on('click', '.js-approve-request', function(){
+$(document).off('click', '.js-approve-request').on('click', '.js-approve-request', function() {
     const id = $(this).data('id');
-    if(!id) return;
+    if (!id) return;
     approveRequest(id);
 });
 
-$(document).off('click', '.js-reject-request').on('click', '.js-reject-request', function(){
+$(document).off('click', '.js-reject-request').on('click', '.js-reject-request', function() {
     const id = $(this).data('id');
-    if(!id) return;
+    if (!id) return;
     rejectRequest(id);
 });
 
-function approveRequest(id){
-    $.getJSON("<?= base_url('meeting/approve_ajax/') ?>"+id, function(res){
-        if(!res.status){
+function approveRequest(id) {
+    $.getJSON("<?= base_url('meeting/approve_ajax/') ?>" + id, function(res) {
+        if (!res.status) {
             alert(res.msg || 'Approve failed');
             return;
         }
         // redirect to existing meeting creation flow
-        if(res.redirect){
+        if (res.redirect) {
             window.location.href = res.redirect;
             return;
         }
     });
 }
 
-function rejectRequest(id){
-    if(!confirm('Reject this meeting request?')) return;
+function rejectRequest(id) {
+    if (!confirm('Reject this meeting request?')) return;
 
-    $.getJSON("<?= base_url('meeting/reject_ajax/') ?>"+id, function(res){
-        if(res.status){
+    $.getJSON("<?= base_url('meeting/reject_ajax/') ?>" + id, function(res) {
+        if (res.status) {
             alert(res.msg || 'Rejected');
-            if(expertCalendar) expertCalendar.refetchEvents();
-        }else{
+            if (expertCalendar) expertCalendar.refetchEvents();
+        } else {
             alert(res.msg || 'Reject failed');
         }
     });
@@ -1012,8 +1051,7 @@ function sendRequest() {
     });
 }
 
-function redirect(page)
-{
-    window.location.href=page;
+function redirect(page) {
+    window.location.href = page;
 }
 </script>
